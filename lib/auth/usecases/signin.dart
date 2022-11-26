@@ -6,34 +6,40 @@ import '../../interceptors/token_interceptor.dart';
 import '../auth_repository.dart';
 import '../domain/entities/user.dart';
 
-class AuthUseCase implements AuthRepository {
+class AuthUseCase {
   final Dio _api;
 
   AuthUseCase(this._api);
 
-  @override
-  Future<Either<AuthException, AuthUser>> signIn(
-      AuthSignInParams params) async {
-    // try make a request to the api
-    // if success return AuthUser
-    // if error return AuthException
+  Future<Either<AuthException, String>> signIn(AuthSignInParams params) async {
+    try {
+      print(params.email);
+      print(params.password);
 
-    _api.interceptors.add(TokenVerificationInterceptor(_api));
+      _api.options.headers = {
+        'Authorization': 'Basic YXBwQGphcnZpcy4yMDIxOldVdHQzekdO',
+      };
 
-    var response =
-        await _api.post('https://api.pny.com.br/api/v1/auth/login', data: {
-      'email': params.email,
-      'password': params.password,
-    });
+      final response = await _api.post(
+        'http://qas-abctech.ddns.net:8080/jarvis/oauth/token',
+        data: {
+          'username': params.email,
+          'password': params.password,
+          'grant_type': 'password',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      var user = AuthUser.fromJson(response.data['user']);
-      return Right(user);
-    } else {
-      return Left(AuthException(message: response.data['message']));
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        var token = response.data['access_token'];
+        return Right(token);
+      } else {
+        return Left(AuthException(message: 'Invalid credentials'));
+      }
+    } catch (e, s) {
+      print(e);
+      print(s);
+      return Left(AuthException(message: 'Error signing in'));
     }
   }
-
-  @override
-  Future<void> signOut() async {}
 }

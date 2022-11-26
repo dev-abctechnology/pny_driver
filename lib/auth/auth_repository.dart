@@ -11,6 +11,7 @@ abstract class AuthRepository {
 class AuthSignInParams {
   final String email;
   final String password;
+  String grantType = 'password';
 
   AuthSignInParams({required this.email, required this.password});
 }
