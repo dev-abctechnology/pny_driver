@@ -2,48 +2,42 @@ import 'package:pny_driver/shared/models/seletor_model.dart';
 
 class Romaneio {
   late final String id;
-  late final String ckc;
 
   late final String code;
   late final RomaneioData data;
 
-  Romaneio(
-      {required this.id,
-      required this.ckc,
-      required this.code,
-      required this.data});
+  Romaneio({required this.id, required this.code, required this.data});
 
   Romaneio.fromJson(Map<String, dynamic> json) {
     id = json["id"];
-    ckc = json["ckc"];
     code = json["code"];
     data = (json["data"] == null ? null : RomaneioData.fromJson(json["data"]))!;
   }
 }
 
 class RomaneioData {
-  late final String idVeiculo;
-  late final String meioDeTransporte;
-  late final String numeroPaletes;
-  late final List<String> statusGHS;
-  late final String entregaPrevista;
-  late final String coletadoEm;
+  late final String? idVeiculo;
+  late final String? meioDeTransporte;
+  late final String? numeroPaletes;
+  late final List<String?> statusGHS;
+  late final String? entregaPrevista;
+  late final String? coletadoEm;
   late final SeletorT driver;
-  late final String volumeTotal;
-  late final String coletaDocumento;
-  late final String coletaNome;
-  late final String enderecoRetirada;
-  late final String localRetirada;
-  late final String empresa;
-  late final String clientConsulta;
-  late final String scenario;
-  late final String seloSeguranca;
-  late final String observacoesGerais;
-  late final String dataCriacao;
+  late final String? volumeTotal;
+  late final String? coletaDocumento;
+  late final String? coletaNome;
+  late final String? enderecoRetirada;
+  late final String? localRetirada;
+  late final String? empresa;
+  late final String? clientConsulta;
+  late final String? scenario;
+  late final String? seloSeguranca;
+  late final String? observacoesGerais;
+  late final String? dataCriacao;
   late final List<ClienteRomaneio> clientesRomaneio;
-  late final String ultimaIntegracaoRecebidoGHS;
-  late final String ultimaIntegracaoEnvioGHS;
-  late final String observacoesCabecalho;
+  late final String? ultimaIntegracaoRecebidoGHS;
+  late final String? ultimaIntegracaoEnvioGHS;
+  late final String? observacoesCabecalho;
 
   RomaneioData(
       {required this.idVeiculo,
@@ -113,12 +107,12 @@ class ClienteRomaneio {
   late final List<EnderecoTemplate> enderecos;
   late final List<RomaneioPedidoDeVenda> pedidosDevenda;
   late final String contato;
-  late final String observacoesGeraisEntrega;
+  late final String? observacoesGeraisEntrega;
   late final String formaPagamento;
   late final String condicaoPagamento;
   late final String vendedor;
-  late final String inscricaoMunicipal;
-  late final String inscricaoEstadual;
+  late final String? inscricaoMunicipal;
+  late final String? inscricaoEstadual;
   late final String cnpj;
   late final String nome;
 
@@ -178,7 +172,7 @@ class RomaneioPedidoDeVenda {
   late final String entregaPrevista;
   late final List<ItemPedidoDeVenda> ctn00010;
   late final String dataCriacao;
-  late final String referencia;
+  late final String? referencia;
   late final String pcp;
   late final String numeroOrcamento;
 
@@ -197,10 +191,10 @@ class RomaneioPedidoDeVenda {
     jId = json["j_id"];
     entregaPrevista = json["slt_00002"];
     ctn00010 = (json["ctn_00010"] == null
-        ? null
+        ? <ItemPedidoDeVenda>[]
         : (json["ctn_00010"] as List)
             .map((e) => ItemPedidoDeVenda.fromJson(e))
-            .toList())!;
+            .toList());
     dataCriacao = json["slt_00001"];
     referencia = json["ipt_00004"];
     pcp = json["ipt_00003"];
@@ -210,7 +204,7 @@ class RomaneioPedidoDeVenda {
 
 class ItemPedidoDeVenda {
   late final String codigoPV;
-  late final String modelo;
+  late final String? modelo;
   late final String jId;
   late final String tecido;
   late final String metroQuadradoCobrado;
@@ -218,15 +212,15 @@ class ItemPedidoDeVenda {
   late final String largura;
   late final String quantidade;
   late final String unidade;
-  late final String observacaoOpcionais;
-  late final String observacaoAcionamentos;
+  late final String? observacaoOpcionais;
+  late final String? observacaoAcionamentos;
   late final String descricao;
-  late final String observacao1;
+  late final String? observacao1;
   late final String? fotoBase64;
   late final String codigoProduto;
   late final String tipo;
   late final int itm;
-  late final String numeroF;
+  late final String? numeroF;
 
   ItemPedidoDeVenda(
       {required this.codigoPV,
@@ -271,15 +265,15 @@ class ItemPedidoDeVenda {
 }
 
 class EnderecoTemplate {
-  late final String logradouro;
-  late final String jId;
-  late final String cidade;
+  late final String? logradouro;
+  late final String? jId;
+  late final String? cidade;
   late final SeletorT tipo;
-  late final String estadoUF;
-  late final String bairro;
-  late final String complemento;
-  late final String cep;
-  late final String numero;
+  late final String? estadoUF;
+  late final String? bairro;
+  late final String? complemento;
+  late final String? cep;
+  late final String? numero;
 
   EnderecoTemplate(
       {required this.logradouro,

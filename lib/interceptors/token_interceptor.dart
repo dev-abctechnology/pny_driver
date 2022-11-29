@@ -18,6 +18,7 @@ class TokenVerificationInterceptor extends Interceptor {
     var validation = await checkToken(options);
     if (validation.statusCode == 401) {
       print('token invalido');
+      print(validation.data);
       var refresh;
       try {
         refresh = await refreshToken();
@@ -85,15 +86,15 @@ class TokenVerificationInterceptor extends Interceptor {
     var prefs = await SharedPreferences.getInstance();
     var authentication = jsonDecode(prefs.getString('authentication')!);
 
-    var user = authentication['user'];
+    var username = authentication['username'];
     var password = authentication['password'];
-    print(user);
+    print(username);
     print(password);
     var headers = {'Authorization': 'Basic YXBwQGphcnZpcy4yMDIxOldVdHQzekdO'};
     var request = http.MultipartRequest('POST',
         Uri.parse('http://qas-abctech.ddns.net:8080/jarvis/oauth/token'));
     request.fields.addAll({
-      'username': 'PRD-QIB4:$user',
+      'username': 'PRD-QIB4:$username',
       'password': '$password',
       'grant_type': 'password'
     });

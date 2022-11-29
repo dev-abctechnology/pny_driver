@@ -5,6 +5,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:pny_driver/auth/token/token_store.dart';
 import 'package:provider/provider.dart';
 
+import '../../pages/home_page.dart';
 import '../auth_repository.dart';
 import '../usecases/signin.dart';
 
@@ -26,6 +27,23 @@ class _SignInState extends State<SignIn> {
   void initState() {
     // TODO: implement initState
     super.initState();
+  }
+
+  void storeToken(String token) {
+    print(token);
+
+    Provider.of<TokenStore>(context, listen: false).setToken(token);
+  }
+
+  void showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+    ));
+  }
+
+  navigateHome(context) {
+    return Navigator.of(context).pushNamed('/');
   }
 
   @override
@@ -82,15 +100,12 @@ class _SignInState extends State<SignIn> {
                         _isLoading = false;
                       });
                       if (result.isRight) {
-                        // Provider.of<TokenStore>(context, listen: false)
-                        //     .setToken(result.right);
-                        print(result.right);
+                        storeToken(result.right);
+                        navigateHome(context);
+                        // ignore: use_build_context_synchronously
+
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(result.left.message),
-                          ),
-                        );
+                        showErrorSnackBar(result.left.message);
                       }
                     }
                   },

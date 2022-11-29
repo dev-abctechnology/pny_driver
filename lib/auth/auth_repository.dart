@@ -1,5 +1,5 @@
 import 'package:either_dart/either.dart';
-import 'package:pny_driver/auth/errors/auth_exception.dart';
+import 'package:pny_driver/errors/auth_exception.dart';
 
 import 'domain/entities/user.dart';
 

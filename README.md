@@ -1,16 +1,38 @@
-# pny_driver
+# Persianas New York - Entregador
 
-A new Flutter project.
+## Objetivo
+Aplicativo com o objetivo de informar quando as entregas dos romaneios foram realizadas e informar se não foi entregue.
 
-## Getting Started
+### principais funcionalidades (aplicativo)
+* Listagem de romaneios atuais e passados do usuário.
+* Visualização dos detalhes de romaneios previamente finalizados.
+* Ordenar os pedidos de venda conforme a melhor rota a partir da localização atual do dispositivo com destino a rota informada pelo usuário.
+* Ao chegar a cada destino, opção de selecionar entre entregue ou não entregue e fluxo especifico para cada situação.
 
-This project is a starting point for a Flutter application.
+### Sequência de navegação
+#### login
+* Campo de CPF/CNPJ.
+* Campo de Senha.
+* Botão de Login.
 
-A few resources to get you started if this is your first Flutter project:
+#### Home Page
+##### aba 1
+- Listagem dos romaneios ativos tendo como base a data atual.
+##### aba 2
+- Listagem dos romaneios finalizados e de datas anteriores.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+#### Romaneio do dia
+- Informações das entregas que serão realizadas.
+- Botão de Iniciar viagem.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Desenvolvimento
+- [ ] Implementação da Assinatura digital
+- [ ] Integrar APIs do google Maps para fazer roteirização
+- [ ] Integrar com APP nativo de navegação
+- [x] Melhorar background life cycle do app: Não é considerável rodar em background
+
+
+### Questionamentos
+* Q: O app irá manter o usuário logado? R:
+* Como o app irá se comportar caso não haja conexão com a internet / jarvis ao entrar?
+* Como o app irá se comportar caso não haja conexão com a internet / jarvis durante uma viagem do romaneio?

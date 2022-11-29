@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:either_dart/either.dart';
-import 'package:pny_driver/auth/errors/auth_exception.dart';
+import 'package:pny_driver/errors/auth_exception.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../interceptors/token_interceptor.dart';
 import '../auth_repository.dart';
@@ -18,6 +21,7 @@ class AuthUseCase {
 
       _api.options.headers = {
         'Authorization': 'Basic YXBwQGphcnZpcy4yMDIxOldVdHQzekdO',
+        'Content-Type': 'application/x-www-form-urlencoded',
       };
 
       final response = await _api.post(
@@ -32,6 +36,13 @@ class AuthUseCase {
       print(response.statusCode);
       if (response.statusCode == 200) {
         var token = response.data['access_token'];
+        // store in sharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        prefs.setString(
+            'authentication',
+            jsonEncode(
+                {'username': params.email, 'password': params.password}));
+        prefs.setString('token', token);
         return Right(token);
       } else {
         return Left(AuthException(message: 'Invalid credentials'));
