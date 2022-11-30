@@ -4,6 +4,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:intl/intl.dart';
 import 'package:pny_driver/domain/datasource/romaneio_datasource.dart';
 import 'package:pny_driver/domain/models/romaneio_lite_model.dart';
+import 'package:pny_driver/pages/romaneio_details_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -34,14 +35,16 @@ class _HomePageState extends State<HomePage> {
         });
 
     var romaneio =
-        await RomaneioDataSource().getRomaneioById('6384db3dd8606813bd6c23d1');
+        await RomaneioDataSource().getRomaneioById(idcontroller.text);
     String date = DateFormat('dd/MM/yyyy').format(DateTime.parse(_date));
     Navigator.of(context).pop();
-    Navigator.pushNamed(context, '/romaneio', arguments: {
-      'romaneio': romaneio,
-      'date': date,
-    });
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => RomaneioDetails(
+              romaneio: romaneio,
+            )));
   }
+
+  var idcontroller = TextEditingController(text: '6380e745d8606813bd6b156e');
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +53,14 @@ class _HomePageState extends State<HomePage> {
         title: Text('Romaneios - $_date'),
       ),
       body: SingleChildScrollView(
-          child: ListView.builder(
+          child: Column(
+        children: [
+          TextFormField(
+            controller: idcontroller,
+          ),
+          ListView.builder(
               shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: 1,
               padding: const EdgeInsets.all(8),
               itemBuilder: (BuildContext context, int index) {
@@ -86,7 +95,9 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 );
-              })),
+              }),
+        ],
+      )),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(

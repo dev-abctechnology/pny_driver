@@ -1,6 +1,7 @@
 //flutter main function
 import 'package:flutter/material.dart';
 import 'package:pny_driver/auth/token/token_store.dart';
+import 'package:pny_driver/config/custom_theme.dart';
 import 'package:pny_driver/pages/camera_page.dart';
 import 'package:pny_driver/pages/home_page.dart';
 import 'package:pny_driver/pages/romaneio_chegada_page.dart';
@@ -43,13 +44,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       child: MaterialApp(
         title: 'Persianas New York Driver',
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          primarySwatch: Palette.customGreyDark,
         ),
         initialRoute: '/signin',
         routes: {
           '/signin': (context) => const SignIn(),
           '/': (context) => const HomePage(),
-          '/romaneio': (context) => const RomaneioDetails(),
           '/chegada': (context) => const RomaneioChegada(),
           '/signature': (context) => const SignaturePage(),
           '/nao_entregue': (context) => const EntregaNaoRealizada(),

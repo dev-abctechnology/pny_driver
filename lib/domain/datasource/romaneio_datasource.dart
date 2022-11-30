@@ -49,7 +49,7 @@ class RomaneioDataSource {
     final token = prefs.getString('token');
     print(token);
 
-    // _dio.interceptors.add(TokenVerificationInterceptor(_dio));
+    _dio.interceptors.add(TokenVerificationInterceptor(_dio));
 
     _dio.options.headers = {
       'Content-Type': 'application/json, text/plain, */*',

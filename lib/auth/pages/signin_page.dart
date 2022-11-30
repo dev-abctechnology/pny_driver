@@ -18,8 +18,8 @@ class SignIn extends StatefulWidget {
 
 class _SignInState extends State<SignIn> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _emailController = TextEditingController(text: '05664267000105');
+  final _passwordController = TextEditingController(text: '@BCtech2022@');
   final _authUseCase = AuthUseCase(Dio());
   bool _isLoading = false;
 
