@@ -13,6 +13,14 @@ class Romaneio {
     code = json["code"];
     data = (json["data"] == null ? null : RomaneioData.fromJson(json["data"]))!;
   }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data["id"] = id;
+    data["code"] = code;
+    data["data"] = this.data.toJson();
+    return data;
+  }
 }
 
 class RomaneioData {
@@ -95,6 +103,33 @@ class RomaneioData {
     observacoesGerais = json["ipt_00014"];
     seloSeguranca = json["ipt_00013"];
   }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data["ipt_00012"] = idVeiculo;
+    data["ipt_00011"] = meioDeTransporte;
+    data["ipt_00010"] = numeroPaletes;
+    data["slt_00002"] = statusGHS;
+    data["slt_00001"] = dataCriacao;
+    data["ctn_00007"] = clientesRomaneio.map((e) => e.toJson()).toList();
+    data["slt_00008"] = ultimaIntegracaoRecebidoGHS;
+    data["slt_00006"] = entregaPrevista;
+    data["slt_00007"] = coletadoEm;
+    data["slt_00005"] = driver.toJson();
+    data["ipt_00009"] = volumeTotal;
+    data["ipt_00008"] = coletaDocumento;
+    data["ipt_00007"] = coletaNome;
+    data["ipt_00006"] = enderecoRetirada;
+    data["ipt_00005"] = localRetirada;
+    data["ipt_00004"] = empresa;
+    data["ipt_00003"] = clientConsulta;
+    data["ipt_00002"] = scenario;
+    data["slt_00011"] = ultimaIntegracaoEnvioGHS;
+    data["ipt_00015"] = observacoesCabecalho;
+    data["ipt_00014"] = observacoesGerais;
+    data["ipt_00013"] = seloSeguranca;
+    return data;
+  }
 }
 
 class ClienteRomaneio {
@@ -115,6 +150,7 @@ class ClienteRomaneio {
   late final String? inscricaoEstadual;
   late final String cnpj;
   late final String nome;
+  late final String imagem;
 
   ClienteRomaneio(
       {required this.codigo,
@@ -133,7 +169,8 @@ class ClienteRomaneio {
       required this.inscricaoMunicipal,
       required this.inscricaoEstadual,
       required this.cnpj,
-      required this.nome});
+      required this.nome,
+      required this.imagem});
 
   ClienteRomaneio.fromJson(Map<String, dynamic> json) {
     codigo = json["ipt_00001"];
@@ -163,6 +200,33 @@ class ClienteRomaneio {
     observacoesGeraisEntrega = json["ipt_00012"];
     cnpj = json["ipt_00003"];
     nome = json["ipt_00002"];
+    imagem = json["cst_00001"] != null ? json["cst_00001"]['data'] : '';
+    print(imagem);
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data["ipt_00001"] = codigo;
+    data["j_id"] = jId;
+    data["ipt_00011"] = regiaoEntrega;
+    data["ipt_00010"] = telefoneEntrega;
+    data["slt_00003"] = courier.toJson();
+    data["slt_00001"] = entregaPrevista;
+    data["ctn_00008"] = enderecos.map((e) => e.toJson()).toList();
+    data["ctn_00009"] = pedidosDevenda.map((e) => e.toJson()).toList();
+    data["ipt_00009"] = contato;
+    data["ipt_00008"] = formaPagamento;
+    data["ipt_00007"] = condicaoPagamento;
+    data["ipt_00006"] = vendedor;
+    data["ipt_00005"] = inscricaoMunicipal;
+    data["ipt_00004"] = inscricaoEstadual;
+    data["ipt_00012"] = observacoesGeraisEntrega;
+    data["ipt_00003"] = cnpj;
+    data["ipt_00002"] = nome;
+    imagem != ''
+        ? data["cst_00001"]['data'] = imagem
+        : data["cst_00001"] = null;
+    return data;
   }
 }
 
@@ -187,7 +251,7 @@ class RomaneioPedidoDeVenda {
       required this.numeroOrcamento});
 
   RomaneioPedidoDeVenda.fromJson(Map<String, dynamic> json) {
-    codigo = json["ipt_00001"];
+    codigo = json["ipt_00001"].toString();
     jId = json["j_id"];
     entregaPrevista = json["slt_00002"];
     ctn00010 = (json["ctn_00010"] == null
@@ -198,7 +262,20 @@ class RomaneioPedidoDeVenda {
     dataCriacao = json["slt_00001"];
     referencia = json["ipt_00004"];
     pcp = json["ipt_00003"];
-    numeroOrcamento = json["ipt_00002"];
+    numeroOrcamento = json["ipt_00002"].toString();
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data["ipt_00001"] = codigo;
+    data["j_id"] = jId;
+    data["slt_00002"] = entregaPrevista;
+    data["ctn_00010"] = ctn00010.map((e) => e.toJson()).toList();
+    data["slt_00001"] = dataCriacao;
+    data["ipt_00004"] = referencia;
+    data["ipt_00003"] = pcp;
+    data["ipt_00002"] = numeroOrcamento;
+    return data;
   }
 }
 
@@ -246,12 +323,12 @@ class ItemPedidoDeVenda {
     codigoPV = json["ipt_00001"];
     modelo = json["ipt_00012"];
     jId = json["j_id"];
-    tecido = json["ipt_00011"];
-    metroQuadradoCobrado = json["ipt_00010"];
-    altura = json["ipt_00009"];
-    largura = json["ipt_00008"];
-    quantidade = json["ipt_00007"];
-    unidade = json["ipt_00006"];
+    tecido = json["ipt_00011"].toString();
+    metroQuadradoCobrado = json["ipt_00010"].toString();
+    altura = json["ipt_00009"].toString();
+    largura = json["ipt_00008"].toString();
+    quantidade = json["ipt_00007"].toString();
+    unidade = json["ipt_00006"].toString();
     observacaoOpcionais = json["ipt_00017"];
     observacaoAcionamentos = json["ipt_00016"];
     descricao = json["ipt_00004"];
@@ -261,6 +338,29 @@ class ItemPedidoDeVenda {
     tipo = json["ipt_00014"];
     itm = json["ipt_00002"];
     numeroF = json["ipt_00013"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data["ipt_00001"] = codigoPV;
+    data["ipt_00012"] = modelo;
+    data["j_id"] = jId;
+    data["ipt_00011"] = tecido;
+    data["ipt_00010"] = metroQuadradoCobrado;
+    data["ipt_00009"] = altura;
+    data["ipt_00008"] = largura;
+    data["ipt_00007"] = quantidade;
+    data["ipt_00006"] = unidade;
+    data["ipt_00017"] = observacaoOpcionais;
+    data["ipt_00016"] = observacaoAcionamentos;
+    data["ipt_00004"] = descricao;
+    data["ipt_00015"] = observacao1;
+    data["cst_00001"] = fotoBase64;
+    data["ipt_00003"] = codigoProduto;
+    data["ipt_00014"] = tipo;
+    data["ipt_00002"] = itm;
+    data["ipt_00013"] = numeroF;
+    return data;
   }
 }
 
@@ -298,5 +398,33 @@ class EnderecoTemplate {
     complemento = json["ipt_00004"];
     cep = json["ipt_00003"];
     numero = json["ipt_00002"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data["ipt_00001"] = logradouro;
+    data["j_id"] = jId;
+    data["ipt_00007"] = cidade;
+    data["slt_00001"] = tipo.toJson();
+    data["ipt_00006"] = estadoUF;
+    data["ipt_00005"] = bairro;
+    data["ipt_00004"] = complemento;
+    data["ipt_00003"] = cep;
+    data["ipt_00002"] = numero;
+    return data;
+  }
+}
+
+class ImagemJarvis {
+  late final String code;
+  late final String name;
+  late final String data;
+
+  ImagemJarvis({required this.code, required this.name, required this.data});
+
+  ImagemJarvis.fromJson(Map<String, dynamic> json) {
+    code = json['code'];
+    name = json['name'];
+    data = json['data'];
   }
 }

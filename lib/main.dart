@@ -5,7 +5,7 @@ import 'package:pny_driver/config/custom_theme.dart';
 import 'package:pny_driver/pages/camera_page.dart';
 import 'package:pny_driver/pages/home_page.dart';
 import 'package:pny_driver/pages/romaneio_chegada_page.dart';
-import 'package:pny_driver/pages/romaneio_details_page.dart';
+import 'package:pny_driver/roteiro/romaneio_details_page.dart';
 import 'package:pny_driver/pages/signature_page.dart';
 import 'package:provider/provider.dart';
 

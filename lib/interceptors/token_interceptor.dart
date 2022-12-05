@@ -90,30 +90,30 @@ class TokenVerificationInterceptor extends Interceptor {
     var password = authentication['password'];
     print(username);
     print(password);
-    var headers = {'Authorization': 'Basic YXBwQGphcnZpcy4yMDIxOldVdHQzekdO'};
-    var request = http.MultipartRequest('POST',
-        Uri.parse('http://qas-abctech.ddns.net:8080/jarvis/oauth/token'));
-    request.fields.addAll({
-      'username': 'PRD-QIB4:$username',
-      'password': '$password',
-      'grant_type': 'password'
-    });
 
-    request.headers.addAll(headers);
-    try {
-      http.StreamedResponse response = await request.send();
+//dio para fazer a requisição
+    var _dio = Dio();
 
-      if (response.statusCode == 200) {
-        var resposta = jsonDecode(await response.stream.bytesToString());
-        prefs.setString('token', resposta.accessToken);
-        return true;
-      } else {
-        print(response.statusCode);
-        print(response.reasonPhrase);
-        return false;
-      }
-    } catch (e) {
-      throw Exception('Verifique sua conexão');
+    _dio.options.headers = {
+      'Authorization': 'Basic YXBwQGphcnZpcy4yMDIxOldVdHQzekdO',
+      'Content-Type': 'application/x-www-form-urlencoded',
+    };
+
+    final response = await _dio.post(
+      'http://qas-abctech.ddns.net:8080/jarvis/oauth/token',
+      data: {
+        'username': username,
+        'password': password,
+        'grant_type': 'password',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      var token = response.data['access_token'];
+      prefs.setString('token', token);
+      return true;
+    } else {
+      return false;
     }
   }
 }

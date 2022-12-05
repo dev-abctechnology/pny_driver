@@ -2,12 +2,9 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'dart:developer' as developer;
-import 'package:flutter/cupertino.dart';
-import 'package:pny_driver/auth/token/token_store.dart';
 import 'package:pny_driver/domain/models/romaneio_lite_model.dart';
 import 'package:pny_driver/domain/models/romaneio_model.dart';
 import 'package:pny_driver/interceptors/token_interceptor.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RomaneioDataSource {
@@ -49,7 +46,7 @@ class RomaneioDataSource {
     final token = prefs.getString('token');
     print(token);
 
-    _dio.interceptors.add(TokenVerificationInterceptor(_dio));
+    _dio.interceptors.add(TokenVerificationInterceptor(Dio()));
 
     _dio.options.headers = {
       'Content-Type': 'application/json, text/plain, */*',

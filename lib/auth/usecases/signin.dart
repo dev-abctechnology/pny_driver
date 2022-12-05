@@ -50,7 +50,7 @@ class AuthUseCase {
     } catch (e, s) {
       print(e);
       print(s);
-      return Left(AuthException(message: 'Error signing in'));
+      return Left(AuthException(message: 'Falha ao fazer login'));
     }
   }
 }

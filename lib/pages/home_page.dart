@@ -4,7 +4,9 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:intl/intl.dart';
 import 'package:pny_driver/domain/datasource/romaneio_datasource.dart';
 import 'package:pny_driver/domain/models/romaneio_lite_model.dart';
-import 'package:pny_driver/pages/romaneio_details_page.dart';
+import 'package:pny_driver/roteiro/romaneio_details_page.dart';
+
+import '../roteiro/store/roteiro_store.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,6 +22,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+
     _date = DateTime.now().toString();
   }
 
@@ -44,7 +47,7 @@ class _HomePageState extends State<HomePage> {
             )));
   }
 
-  var idcontroller = TextEditingController(text: '6380e745d8606813bd6b156e');
+  var idcontroller = TextEditingController(text: '6125567e2212ef0ad848d7ae');
 
   @override
   Widget build(BuildContext context) {
