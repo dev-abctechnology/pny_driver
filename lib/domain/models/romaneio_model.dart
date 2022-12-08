@@ -150,7 +150,8 @@ class ClienteRomaneio {
   late final String? inscricaoEstadual;
   late final String cnpj;
   late final String nome;
-  late final String imagem;
+  late String imagem;
+  late bool entregue;
 
   ClienteRomaneio(
       {required this.codigo,
@@ -170,7 +171,8 @@ class ClienteRomaneio {
       required this.inscricaoEstadual,
       required this.cnpj,
       required this.nome,
-      required this.imagem});
+      required this.imagem,
+      required this.entregue});
 
   ClienteRomaneio.fromJson(Map<String, dynamic> json) {
     codigo = json["ipt_00001"];
@@ -201,6 +203,7 @@ class ClienteRomaneio {
     cnpj = json["ipt_00003"];
     nome = json["ipt_00002"];
     imagem = json["cst_00001"] != null ? json["cst_00001"]['data'] : '';
+    entregue = json["cst_00001"] != null ? true : false;
     print(imagem);
   }
 
@@ -226,6 +229,7 @@ class ClienteRomaneio {
     imagem != ''
         ? data["cst_00001"]['data'] = imagem
         : data["cst_00001"] = null;
+    data["entregue"] = entregue;
     return data;
   }
 }

@@ -13,6 +13,7 @@ import 'package:pny_driver/pages/widgets/expandable_card_romaneio.dart';
 import 'package:pny_driver/pages/widgets/search_bar.dart';
 import 'package:pny_driver/pages/widgets/search_bar_widget.dart';
 import 'package:pny_driver/roteiro/store/roteiro_store.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:slide_to_act/slide_to_act.dart';
 import 'dart:developer' as developer;
 import '../domain/models/romaneio_model.dart';
@@ -40,7 +41,8 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
   List<LatLng> polylineCoordinates = [];
   List<PolylineWayPoint> _polyLinePoints = [];
   late Romaneio romaneio;
-  final Set<Marker> _marcadores = {};
+  Set<Marker> _marcadores = {};
+
   final Set<Polyline> _polylines = {};
   bool _sorted = false;
   bool _showDeliveryOrder = false;
@@ -159,7 +161,7 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
           await _convertAddressToLatLng(address: _destinationAddress.text);
 
       List<ClienteRomaneio> clientes = widget.romaneio.data.clientesRomaneio;
-      clientes.removeWhere((element) => element.imagem != '');
+      clientes.removeWhere((element) => element.entregue == true);
 
       List<EnderecoTemplate> enderecos = clientes
           .map((e) => e.enderecos
@@ -210,7 +212,205 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
     }
   }
 
-  void launchWaze(String address) async {
+  _printPoly() {
+    developer.log('_polylines: $_polylines');
+
+    var rota = _polylines.first;
+
+    String rotaJson = jsonEncode(rota.toJson());
+    developer.log('rotaJson: $rotaJson');
+    var prefs = SharedPreferences.getInstance();
+    prefs.then((value) {
+      value.setString('rota', rotaJson);
+    });
+
+    var rotaPrefs = prefs.then((value) {
+      return value.getString('rota');
+    });
+
+    var rotaDecode = jsonDecode(rotaPrefs.toString());
+
+    var newPoly = Polyline(
+      polylineId: rotaDecode['polylineId'],
+      points: rotaDecode['points'],
+      width: rotaDecode['width'],
+      color: rotaDecode['color'],
+      geodesic: rotaDecode['geodesic'],
+      visible: rotaDecode['visible'],
+      startCap: rotaDecode['startCap'],
+      endCap: rotaDecode['endCap'],
+      jointType: rotaDecode['jointType'],
+      patterns: rotaDecode['patterns'],
+      consumeTapEvents: rotaDecode['consumeTapEvents'],
+      onTap: rotaDecode['onTap'],
+      zIndex: rotaDecode['zIndex'],
+    );
+
+    // print(newPoly);
+  }
+
+  _printMarker() {
+    // developer.log('_marcadores: ${_marcadores.length}');
+    var jsonMarkers = jsonEncode(_marcadores.map((e) => e.toJson()).toList());
+    developer.log('jsonMarkers: $jsonMarkers', name: 'UMMMMMMM');
+    var klklklasdas = jsonDecode(jsonMarkers);
+
+    Set<Marker> novosMarcadores = klklklasdas
+        .map((e) {
+          final markerId = e['markerId'] as String;
+          final position = e['position'] as List;
+          final infoWindow = e['infoWindow'] as Map;
+          final icon = e['icon'] as List;
+          final anchor = e['anchor'] as List;
+          final alpha = e['alpha'] as double;
+          final consumeTapEvents = e['consumeTapEvents'] as bool;
+          final draggable = e['draggable'] as bool;
+          final flat = e['flat'] as bool;
+          final rotation = e['rotation'] as double;
+
+          return Marker(
+            markerId: MarkerId(markerId),
+            position: LatLng(position[0], position[1]),
+            infoWindow: InfoWindow(
+              title: infoWindow['title'] as String,
+              anchor: Offset(anchor[0], anchor[1]),
+            ),
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueRose,
+            ),
+            anchor: Offset(anchor[0], anchor[1]),
+            alpha: alpha,
+            consumeTapEvents: consumeTapEvents,
+            draggable: draggable,
+            flat: flat,
+            rotation: rotation,
+            onTap: () {
+              _modalBottomSheetMaps(LatLng(position[0], position[1]));
+            },
+          );
+        })
+        .cast<Marker>()
+        .toSet();
+    var jsonMarkersKKK =
+        jsonEncode(novosMarcadores.map((e) => e.toJson()).toList());
+    developer.log('jsonMarkersKKK: $jsonMarkersKKK',
+        name: 'DOOOOOOIIIIS', level: 2000);
+
+    setState(() {
+      _marcadores = novosMarcadores;
+    });
+  }
+
+  _modalBottomSheetMaps(LatLng latLng) {
+    return showModalBottomSheet(
+      backgroundColor: Colors.transparent,
+      context: context,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.3,
+        minChildSize: 0.3,
+        maxChildSize: 0.5,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: Palette.customGreyDark.withAlpha(245),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          height: 400,
+          child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  'Escolha o aplicativo de navegação',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Palette.persianasColor),
+                ),
+              ),
+              //button with icon from network
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+//wrap IconButton with Container rounded corners
+
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: Palette.persianasColor.withAlpha(30),
+                    ),
+                    child: IconButton(
+                      iconSize: 75,
+                      icon: Image.asset(
+                        'assets/waze.png',
+                        fit: BoxFit.cover,
+                      ),
+                      onPressed: () {
+                        _launchWazeFromLatLng(latLng);
+                      },
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: Palette.persianasColor.withAlpha(30),
+                    ),
+                    child: IconButton(
+                      iconSize: 75,
+                      onPressed: () {
+                        _launchMapsFromLatLng(latLng);
+                      },
+                      icon: Image.asset(
+                        'assets/google_maps.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _launchMapsFromLatLng(LatLng latLng) async {
+    var url =
+        'google.navigation:q=${latLng.latitude.toString()},${latLng.longitude.toString()}';
+    var fallbackUrl =
+        'https://www.google.com/maps/search/?api=1&query=${latLng.latitude.toString()},${latLng.longitude.toString()}';
+    try {
+      bool launched =
+          await launch(url, forceSafariVC: false, forceWebView: false);
+      if (!launched) {
+        await launch(fallbackUrl, forceSafariVC: false, forceWebView: false);
+      }
+    } catch (e) {
+      await launch(fallbackUrl, forceSafariVC: false, forceWebView: false);
+    }
+  }
+
+  void _launchWazeFromLatLng(LatLng latLng) async {
+    var url =
+        'waze://?ll=${latLng.latitude.toString()},${latLng.longitude.toString()}';
+    var fallbackUrl =
+        'https://waze.com/ul?ll=${latLng.latitude.toString()},${latLng.longitude.toString()}&navigate=yes';
+    try {
+      bool launched =
+          await launch(url, forceSafariVC: false, forceWebView: false);
+      if (!launched) {
+        await launch(fallbackUrl, forceSafariVC: false, forceWebView: false);
+      }
+    } catch (e) {
+      await launch(fallbackUrl, forceSafariVC: false, forceWebView: false);
+    }
+  }
+
+  Future launchWaze(String address) async {
     var infoAddress = await _convertAddressToLatLng(address: address);
 
     var url =
@@ -228,7 +428,7 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
     }
   }
 
-  void launchGoogleMaps(String address) async {
+  Future launchGoogleMaps(String address) async {
     var infoAddress = await _convertAddressToLatLng(address: address);
 
     var url =
@@ -249,7 +449,7 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
   _createMarkersFromAddress() async {
     List<ClienteRomaneio> clientes = romaneio.data.clientesRomaneio;
 
-    clientes.removeWhere((element) => element.imagem != '');
+    clientes.removeWhere((element) => element.entregue == true);
 
     List<EnderecoTemplate> enderecos = clientes
         .map((e) => e.enderecos
@@ -318,26 +518,40 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  IconButton(
-                    iconSize: 75,
-                    icon: Image.network(
-                      'https://www.agenciavirtualreality360.com.br/wp-content/uploads/2022/02/waze-1024x1024.png',
-                      fit: BoxFit.cover,
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(50),
+                      borderRadius: BorderRadius.circular(50),
                     ),
-                    onPressed: () {
-                      launchWaze(
-                          '${e.logradouro} ${e.numero}- ${e.complemento}, ${e.bairro}, ${e.cidade}, ${e.cep}, ${e.cidade}');
-                    },
+                    child: IconButton(
+                      iconSize: 75,
+                      icon: Image.asset(
+                        'assets/waze.png',
+                        fit: BoxFit.cover,
+                      ),
+                      onPressed: () {
+                        launchWaze(
+                                '${e.logradouro} ${e.numero}- ${e.complemento}, ${e.bairro}, ${e.cidade}, ${e.cep}, ${e.cidade}')
+                            .then((value) => Navigator.of(context).pop(true));
+                      },
+                    ),
                   ),
-                  IconButton(
-                    iconSize: 75,
-                    onPressed: () {
-                      launchGoogleMaps(
-                          '${e.logradouro} ${e.numero}- ${e.complemento}, ${e.bairro}, ${e.cidade}, ${e.cep}, ${e.cidade}');
-                    },
-                    icon: Image.network(
-                      'https://cdn-icons-png.flaticon.com/512/2642/2642502.png',
-                      fit: BoxFit.cover,
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(50),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: IconButton(
+                      iconSize: 75,
+                      onPressed: () {
+                        launchGoogleMaps(
+                                '${e.logradouro} ${e.numero}- ${e.complemento}, ${e.bairro}, ${e.cidade}, ${e.cep}, ${e.cidade}')
+                            .then((value) => Navigator.of(context).pop(true));
+                      },
+                      icon: Image.asset(
+                        'assets/google_maps.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ],
@@ -375,7 +589,7 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
           'https://maps.googleapis.com/maps/api/directions/json?origin=$myAddress&destination=${destination.address}&waypoints=optimize:true|$waypoints&key=$apiKey');
 
       directionSuggestion = DirectionSuggestion.fromJson(response.data);
-
+      print(directionSuggestion.toJson());
       // print the sum of the distance as kilometers and time as minutes of every leg
       var allDistanceKm = _convertDistanceValue();
       var allTimeMinutes = _convertDurationValue();
@@ -543,26 +757,53 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
                 ),
                 itemBuilder: (BuildContext context, int index) {
                   return AnimationConfiguration.staggeredList(
-                    position: index,
-                    duration: const Duration(milliseconds: 2500),
-                    delay: const Duration(milliseconds: 100),
-                    child: SlideAnimation(
+                      position: index,
                       duration: const Duration(milliseconds: 2500),
-                      curve: Curves.fastLinearToSlowEaseIn,
-                      horizontalOffset: 30,
-                      verticalOffset: 300,
-                      child: FlipAnimation(
+                      delay: const Duration(milliseconds: 100),
+                      child: SlideAnimation(
+                        duration: const Duration(milliseconds: 2500),
                         curve: Curves.fastLinearToSlowEaseIn,
-                        duration: const Duration(milliseconds: 3000),
-                        flipAxis: FlipAxis.y,
-                        child: ExpandableRomaneioClienteWidget(
-                          cliente: romaneio.data.clientesRomaneio[index],
-                          deliveryOrder: _showDeliveryOrder,
-                          index: index,
+                        horizontalOffset: 30,
+                        verticalOffset: 300,
+                        child: FlipAnimation(
+                          curve: Curves.fastLinearToSlowEaseIn,
+                          duration: const Duration(milliseconds: 3000),
+                          flipAxis: FlipAxis.y,
+                          child:
+
+                              // ExpandableRomaneioClienteWidget(
+                              //   cliente: romaneio.data.clientesRomaneio[index],
+                              //   deliveryOrder: _showDeliveryOrder,
+                              //   index: index,
+                              //   onTap: () {
+                              //     print(
+                              //         romaneio.data.clientesRomaneio[index].entregue);
+                              //     setState(() {
+                              //       romaneio.data.clientesRomaneio[index].entregue =
+                              //           !romaneio
+                              //               .data.clientesRomaneio[index].entregue;
+                              //     });
+                              //     print(
+                              //         romaneio.data.clientesRomaneio[index].entregue);
+                              //   },
+                              // ),
+
+                              _expandableCard(
+                                  romaneio.data.clientesRomaneio[index],
+                                  index,
+                                  _showDeliveryOrder, () {
+                            print(
+                                romaneio.data.clientesRomaneio[index].entregue);
+                            setState(() {
+                              romaneio.data.clientesRomaneio[index].entregue =
+                                  !romaneio
+                                      .data.clientesRomaneio[index].entregue;
+                            });
+                            print(
+                                romaneio.data.clientesRomaneio[index].entregue);
+                          }),
                         ),
-                      ),
-                    ),
-                  );
+                      ));
                 },
               ),
             ),
@@ -570,6 +811,232 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
         ),
       ]),
     );
+  }
+
+  Widget _expandableCard(
+      ClienteRomaneio cliente, int index, deliveryOrder, onTap) {
+    var endereco = cliente.enderecos
+        .firstWhere((element) => element.tipo.label == 'Endereço Entrega');
+
+    bool _expanded = true;
+
+    return StatefulBuilder(builder: (context, setState) {
+      var statusColor =
+          cliente.entregue == false ? Palette.persianasColor : Colors.green;
+
+      return Card(
+        color: Palette.customGreyDark,
+        child: _expanded == true
+            ? Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Palette.customGreyLight.shade200.withAlpha(50),
+                ),
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      _expanded = !_expanded;
+                      print(_expanded);
+                    });
+                  },
+                  child: ListTile(
+                    leading: deliveryOrder == false
+                        ? null
+                        : Text(
+                            '${index + 1}ª',
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: statusColor),
+                          ),
+                    subtitle: Text(
+                      cliente.nome,
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                          color: statusColor),
+                    ),
+                    title: Text(
+                      '${endereco.logradouro}, ${endereco.numero} - ${endereco.bairro} - ${endereco.cidade} - ${endereco.estadoUF}',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: statusColor),
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(
+                        Icons.arrow_drop_down,
+                        color: statusColor,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _expanded = !_expanded;
+                          print(_expanded);
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              )
+            : Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Palette.customGreyLight.shade200.withAlpha(50),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: statusColor,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _expanded = !_expanded;
+                              print(_expanded);
+                            });
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                fit: FlexFit.tight,
+                                child: Text(
+                                  overflow: TextOverflow.ellipsis,
+                                  cliente.nome,
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white),
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.arrow_drop_up,
+                                  color: Colors.white,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _expanded = !_expanded;
+                                    print(_expanded);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        child: Column(
+                          children: [
+                            Text(
+                              '${endereco.logradouro}, ${endereco.numero} - ${endereco.bairro} - ${endereco.cidade} - ${endereco.estadoUF}',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: statusColor),
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Telefone',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: statusColor),
+                                ),
+                                Text(
+                                  cliente.telefoneEntrega,
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: statusColor),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            cliente.observacoesGeraisEntrega != null
+                                ? Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Observação',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: statusColor),
+                                      ),
+                                      Text(
+                                        cliente.observacoesGeraisEntrega ?? '',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: statusColor),
+                                      ),
+                                    ],
+                                  )
+                                : Container(),
+                            const SizedBox(
+                              height: 8,
+                            )
+                            // button to open google maps with the route to the client address and navigate to /entregue route
+                            ,
+                            TextButton(
+                              onPressed: () {
+                                //  _navigationApplication(endereco) and then navigate to /entregue route
+                                _navigationApplication(endereco)
+                                    .then((value) async {
+                                  if (value == true) {
+                                    var entregue = await Navigator.of(context)
+                                        .pushNamed('/chegada', arguments: {
+                                      "cliente": cliente,
+                                      "codigoRomaneio": romaneio.code
+                                    });
+
+                                    if (entregue != null) {
+                                      print(entregue);
+                                      setState(() {
+                                        romaneio.data.clientesRomaneio
+                                            .where((element) =>
+                                                element.jId == cliente.jId)
+                                            .first
+                                            .entregue = true;
+
+                                        cliente.entregue = true;
+                                      });
+                                    }
+                                  }
+                                });
+                              },
+                              child: Text(
+                                'Navegar para o endereço',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ]),
+                  )
+                ],
+              ),
+      );
+    });
   }
 
   void _clearAll() {
@@ -613,8 +1080,10 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
         actions: [
           IconButton(
               onPressed: () async {
-                _getPositionHandler();
-                developer.log(_marcadores.toString());
+                // _getPositionHandler();
+                // developer.log(_marcadores.toString());
+                // _printPoly();
+                _printMarker();
               },
               icon: const Icon(Icons.directions))
         ],
@@ -782,19 +1251,19 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
         _sort().then((value) {
           Navigator.of(context).pop();
           //animate the camera to fit the markers
-          _mapController.animateCamera(
-            CameraUpdate.newLatLngBounds(
-              LatLngBounds(
-                southwest: LatLng(
-                    directionSuggestion.routes.last.bounds.southwest.lat,
-                    directionSuggestion.routes.last.bounds.southwest.lng),
-                northeast: LatLng(
-                    directionSuggestion.routes.last.bounds.northeast.lat,
-                    directionSuggestion.routes.last.bounds.northeast.lng),
-              ),
-              100,
-            ),
-          );
+          // _mapController.animateCamera(
+          //   CameraUpdate.newLatLngBounds(
+          //     LatLngBounds(
+          //       southwest: LatLng(
+          //           directionSuggestion.routes.last.bounds.southwest.lat,
+          //           directionSuggestion.routes.last.bounds.southwest.lng),
+          //       northeast: LatLng(
+          //           directionSuggestion.routes.last.bounds.northeast.lat,
+          //           directionSuggestion.routes.last.bounds.northeast.lng),
+          //     ),
+          //     100,
+          //   ),
+          // );
         });
       } catch (e, s) {
         _erroSnackBar(e.toString());

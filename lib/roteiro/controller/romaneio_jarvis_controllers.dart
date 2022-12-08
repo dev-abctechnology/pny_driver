@@ -19,19 +19,27 @@ class RomaneioJarvisController {
     api.interceptors.add(TokenVerificationInterceptor(Dio()));
 
     api.options.headers = {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
       'Authorization': 'Bearer $token'
     };
 
     developer.log(entrega.toJson().toString());
+    try {
+      final response = await api.post(
+        'http://qas-abctech.ddns.net:8080/jarvis/api/customized/security/PNY-RPVUPD01',
+        data: entrega.toJson().toString(),
+      );
+      if (response.statusCode == 200) {
+        developer.log(response.data.toString());
+        return Right(response.data.toString());
+      } else {
+        developer.log(response.data.toString());
 
-    final response = await api.post(
-      'http://qas-abctech.ddns.net:8080/jarvis/api/customized/secaurity/PNY-RPVUPD01',
-      data: entrega.toJson().toString(),
-    );
-    if (response.statusCode == 200) {
-      return Right(response.data);
-    } else {
+        return Left(Exception('Erro ao atualizar o romaneio'));
+      }
+    } on DioError catch (e, s) {
+      developer.log(e.toString());
+      developer.log(s.toString());
       return Left(Exception('Erro ao atualizar o romaneio'));
     }
   }

@@ -8,14 +8,15 @@ class ExpandableRomaneioClienteWidget extends StatefulWidget {
   final ClienteRomaneio cliente;
 
   final bool deliveryOrder;
-
+  final Function()? onTap;
   final int index;
 
   const ExpandableRomaneioClienteWidget(
       {super.key,
       required this.cliente,
       required this.deliveryOrder,
-      required this.index});
+      required this.index,
+      required this.onTap});
 
   @override
   State<ExpandableRomaneioClienteWidget> createState() =>
@@ -38,7 +39,7 @@ class _ExpandableRomaneioClienteWidgetState
         .where((element) => element.tipo.label == 'Endereço Entrega')
         .first;
     ClienteRomaneio cliente = widget.cliente;
-    bool hasImage = cliente.imagem != '';
+    bool hasImage = cliente.entregue;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -120,9 +121,7 @@ class _ExpandableRomaneioClienteWidgetState
                 ),
               ),
               trailing: IconButton(
-                  onPressed: () {
-                    Navigator.of(context).pushNamed('/chegada');
-                  },
+                  onPressed: widget.onTap,
                   icon: Icon(Icons.arrow_forward_outlined)),
             ),
             GridView.builder(
