@@ -1,13 +1,15 @@
 //flutter main function
 import 'package:flutter/material.dart';
+import 'package:flutter_background/flutter_background.dart';
+import 'package:provider/provider.dart';
+
 import 'package:pny_driver/auth/token/token_store.dart';
 import 'package:pny_driver/config/custom_theme.dart';
 import 'package:pny_driver/pages/camera_page.dart';
 import 'package:pny_driver/pages/home_page.dart';
 import 'package:pny_driver/pages/romaneio_chegada_page.dart';
-import 'package:pny_driver/roteiro/romaneio_details_page.dart';
 import 'package:pny_driver/pages/signature_page.dart';
-import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'auth/pages/signin_page.dart';
 
@@ -31,6 +33,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
   }
 
+//create a method to verify if the user has logged in or not check if the authentication String in sharedPreferences is null or not
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -46,7 +50,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         theme: ThemeData(
           primarySwatch: Palette.customGreyDark,
         ),
-        initialRoute: '/signin',
+        initialRoute: '/',
         routes: {
           '/signin': (context) => const SignIn(),
           '/': (context) => const HomePage(),

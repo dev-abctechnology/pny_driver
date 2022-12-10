@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:intl/intl.dart';
 import 'package:pny_driver/domain/datasource/romaneio_datasource.dart';
 import 'package:pny_driver/domain/models/romaneio_lite_model.dart';
 import 'package:pny_driver/roteiro/romaneio_details_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../roteiro/store/roteiro_store.dart';
 
@@ -18,15 +20,30 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String _date = '';
 
+  Future<bool> isLoggedIn() async {
+    var prefs = await SharedPreferences.getInstance();
+
+    var authentication = prefs.getString('authentication');
+
+    if (authentication == null) {
+      Navigator.of(context).pushReplacementNamed('/signin');
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
     _date = DateTime.now().toString();
+    isLoggedIn();
+    initializeSharedPreferences();
   }
 
-  _romaneioSelectedHandler() async {
+  _romaneioSelectedHandler(String id) async {
 //create a loading dialog
     showDialog(
         context: context,
@@ -37,8 +54,7 @@ class _HomePageState extends State<HomePage> {
           );
         });
 
-    var romaneio =
-        await RomaneioDataSource().getRomaneioById(idcontroller.text);
+    var romaneio = await RomaneioDataSource().getRomaneioById(id);
     String date = DateFormat('dd/MM/yyyy').format(DateTime.parse(_date));
     Navigator.of(context).pop();
     Navigator.of(context).push(MaterialPageRoute(
@@ -48,47 +64,89 @@ class _HomePageState extends State<HomePage> {
   }
 
   var idcontroller = TextEditingController(text: '6125567e2212ef0ad848d7ae');
+  String nome = '';
+
+  initializeSharedPreferences() async {
+    nome = await SharedPreferences.getInstance()
+        .then((value) => value.getString('name')!);
+    setState(() {});
+  }
+
+  var dataSource = RomaneioDataSource();
+
+  initialSearch() async {
+//create a loading dialog
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        });
+
+    try {
+      await dataSource.getRomaneiosLite('EDSON').then((value) {
+        romaneios = value;
+        setState(() {});
+      });
+      if (romaneios.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text('Nenhum romaneio encontrado'),
+        ));
+      }
+    } catch (e, s) {
+      print('error: $e');
+      print('stack: $s');
+    } finally {
+      Navigator.of(context).pop();
+    }
+  }
+
+  List<RomaneioLite> romaneios = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Romaneios - $_date'),
+        title: Text('Bem vindo'),
       ),
       body: SingleChildScrollView(
           child: Column(
         children: [
-          TextFormField(
-            controller: idcontroller,
-          ),
+          // TextFormField(
+          //   controller: idcontroller,
+          // ),
+          Text(nome),
+          ElevatedButton(
+              onPressed: () {
+                initialSearch();
+              },
+              child: const Text('Buscar')),
           ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: 1,
+              itemCount: romaneios.length,
               padding: const EdgeInsets.all(8),
               itemBuilder: (BuildContext context, int index) {
-                var romaneioLite = RomaneioLite(
-                  id: '6384db3dd8606813bd6c23d1',
-                  code: '16294',
-                  driver: 'Motorista',
-                  deliveryDate: '2022-11-28',
-                );
                 String date =
                     DateFormat('dd/MM/yyyy').format(DateTime.parse(_date));
                 return Card(
                   child: InkWell(
-                    onTap: _romaneioSelectedHandler,
+                    onTap: () {
+                      _romaneioSelectedHandler(romaneios[index].id);
+                    },
                     child: Column(
                       children: [
                         // card with romaneio info
                         ListTile(
                           title: Text(
-                            'Código: ' + romaneioLite.code,
+                            'Código: ' + romaneios[index].code,
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 20),
                           ),
                           subtitle: Text(
-                              'Data: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(romaneioLite.deliveryDate))}',
+                              'Data: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(romaneios[index].deliveryDate))}',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
@@ -112,13 +170,39 @@ class _HomePageState extends State<HomePage> {
             label: 'Histórico',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Perfil',
+            icon: Icon(Icons.logout),
+            label: 'Sair',
           ),
         ],
         currentIndex: 0,
         onTap: (int index) {
-          print('index: $index');
+          // show a dialog asking if the user wants to logout
+
+          if (index == 2) {
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Sair'),
+                    content: const Text('Deseja sair?'),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Não')),
+                      TextButton(
+                          onPressed: () async {
+                            var prefs = await SharedPreferences.getInstance();
+                            prefs.clear();
+                            // exit the app
+                            SystemNavigator.pop();
+                          },
+                          child: const Text('Sim')),
+                    ],
+                  );
+                });
+          }
         },
       ),
     );

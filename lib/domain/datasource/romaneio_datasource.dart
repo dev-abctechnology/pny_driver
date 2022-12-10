@@ -22,23 +22,31 @@ class RomaneioDataSource {
       'Authentication': 'Bearer $token',
       'X-stuff-code': 'p-pny-yromo-01'
     };
+//variable with actual date in format 2022-12-08T03
+    var date = DateTime.now().toString().substring(0, 10) + 'T03';
 
+    print(date);
     final response = await _dio.post(
         'http://qas-abctech.ddns.net:8080/jarvis/api/stuff/data/filter',
         data: {
           "filters": [
             {
-              "fieldName": "data.slt_00001.label",
-              "value": "PROPRIO",
+              "fieldName": "data.slt_00005.label",
+              "value": "$user",
               "expression": "CONTAINS"
             }
           ],
-          "sort": {"fieldName": "id", "type": "ASC"}
+          "sort": {"fieldName": "data.slt_00006", "type": "DESC"},
+          "paginator": {"page": 0, "size": 10}
         });
-    final romaneios = response.data as List;
-    return romaneios
-        .map((romaneio) => RomaneioLite.fromJson(romaneio))
-        .toList();
+    final romaneios = response.data['content'] as List;
+    //retone somente os 10 primeiros romaneios da lista
+
+    var a =
+        romaneios.map((romaneio) => RomaneioLite.fromJson(romaneio)).toList();
+    var romaneioDeHoje =
+        a.where((element) => element.deliveryDate.contains(date)).toList();
+    return romaneioDeHoje;
   }
 
   Future<Romaneio> getRomaneioById(id) async {
