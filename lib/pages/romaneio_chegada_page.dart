@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:brasil_fields/brasil_fields.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -44,173 +45,252 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          'A entrega foi efetuada?',
-          style: TextStyle(fontSize: 20),
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        Text(cliente.nome, style: const TextStyle(fontSize: 20)),
-        Text(cliente.cnpj, style: const TextStyle(fontSize: 20)),
-        Card(
-          child: ListView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: cliente.pedidosDevenda.length,
-            itemBuilder: (context, index) => Card(
-              child: ListTile(
-                  title: Center(
-                      child: Text('Pedido de Venda ' +
-                          cliente.pedidosDevenda[index].codigo)),
-                  subtitle: ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: cliente.pedidosDevenda[index].ctn00010.length,
-                    itemBuilder: (context, innerIndex) {
-                      var pedidoDeVenda =
-                          cliente.pedidosDevenda[index].ctn00010[innerIndex];
-
-                      return Card(
-                        child: ListTile(
-                          title: Center(child: Text(pedidoDeVenda.descricao)),
-                          subtitle: Text(pedidoDeVenda.quantidade),
+        Container(
+          padding: const EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 5,
+                blurRadius: 7,
+                offset: const Offset(0, 3), // changes position of shadow
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              const SizedBox(
+                height: 20,
+              ),
+              ListTile(
+                title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      cliente.nome,
+                    )),
+                subtitle:
+                    Text(cliente.cnpj, style: const TextStyle(fontSize: 20)),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Flexible(
+                    child: const Text(
+                      'Pedidos: ',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                  ),
+                  Flexible(
+                    child: ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: cliente.pedidosDevenda.length,
+                      itemBuilder: (context, index) => ListTile(
+                        title: Text(
+                          cliente.pedidosDevenda[index].codigo,
+                          style: const TextStyle(fontSize: 20),
+                          textAlign: TextAlign.right,
                         ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 5,
+                blurRadius: 7,
+                offset: const Offset(0, 3), // changes position of shadow
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              const Text(
+                'A entrega foi efetuada?',
+                style: TextStyle(fontSize: 20),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () async {
+                      _foto = await _handleEntregaNaoEfetuadaPageNavigation();
+                      SystemChrome.setPreferredOrientations(
+                        [
+                          DeviceOrientation.portraitUp,
+                        ],
                       );
+                      if (_foto != null) {
+                        setState(() {
+                          _statusInformado = true;
+                        });
+                      }
                     },
-                  )),
+                    child: const Text('Não'),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                    ),
+                    onPressed: entregaEfetuadaBottomSheet,
+                    child: const Text('Sim'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+  void entregaEfetuadaBottomSheet() async {
+    showModalBottomSheet(
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      context: context,
+      builder: (context) => SingleChildScrollView(
+        child: Container(
+          padding: MediaQuery.of(context).viewInsets,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20.0),
+              topRight: Radius.circular(20.0),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKeyEntregue,
+              child:
+                  Column(mainAxisAlignment: MainAxisAlignment.start, children: [
+                Center(
+                    child: Text('Entrega efetuada',
+                        style: TextStyle(fontSize: 20))),
+                SizedBox(
+                  height: 20,
+                ),
+                TextFormField(
+                  controller: _entregueNomeController,
+                  decoration: const InputDecoration(
+                      labelText: 'Nome do recebedor',
+                      border: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(10.0)))),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor, informe o nome';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                TextFormField(
+                  controller: _entregueDocumentoController,
+                  decoration: const InputDecoration(
+                      labelText: 'Documento do recebedor (CPF ou CNPJ)',
+                      border: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(10.0)))),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    //allow only cpf or cnpj with mask
+                    FilteringTextInputFormatter.digitsOnly,
+                    CpfOuCnpjFormatter()
+                    //auto mask cpf or cnpj when typing
+                  ],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor, informe o documento';
+                    }
+
+                    if (value.length < 14) {
+                      return 'CPF inválido';
+                    }
+
+                    if (value.length > 14 && value.length < 18) {
+                      return 'CNPJ inválido';
+                    }
+
+                    if (value.length == 14) {
+                      if (!CPF.isValid(value)) {
+                        return 'CPF inválido';
+                      }
+                    }
+
+                    return null;
+                  },
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                TextFormField(
+                  controller: _entregueDetalhamentoController,
+                  decoration: const InputDecoration(
+                      labelText: 'Detalhamento da entrega',
+                      border: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(10.0)))),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                    ),
+                    onPressed: () async {
+                      if (_formKeyEntregue.currentState!.validate()) {
+                        _assinatura = await _handleSignaturePageNavigation();
+                        SystemChrome.setPreferredOrientations(
+                          [
+                            DeviceOrientation.portraitUp,
+                          ],
+                        );
+                        if (_assinatura != null) {
+                          Navigator.of(context).pop();
+                          setState(() {
+                            _statusInformado = true;
+                          });
+                        }
+                      }
+                    },
+                    child: const Text('Colher Assinatura'),
+                  ),
+                )
+              ]),
             ),
           ),
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            ElevatedButton(
-              onPressed: () async {
-                _foto = await _handleEntregaNaoEfetuadaPageNavigation();
-                SystemChrome.setPreferredOrientations(
-                  [
-                    DeviceOrientation.portraitUp,
-                  ],
-                );
-                if (_foto != null) {
-                  setState(() {
-                    _statusInformado = true;
-                  });
-                }
-              },
-              child: const Text('Não'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                showModalBottomSheet(
-                  backgroundColor: Colors.transparent,
-                  context: context,
-                  builder: (context) => Container(
-                    padding: EdgeInsets.all(20.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(20.0),
-                        topRight: Radius.circular(20.0),
-                      ),
-                    ),
-                    child: Form(
-                      key: _formKeyEntregue,
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            TextFormField(
-                              controller: _entregueNomeController,
-                              decoration: const InputDecoration(
-                                  labelText: 'Nome do recebedor',
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(10.0)))),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Por favor, informe o nome';
-                                }
-                                return null;
-                              },
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            TextFormField(
-                              controller: _entregueDocumentoController,
-                              decoration: const InputDecoration(
-                                  labelText: 'Documento do recebedor',
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(10.0)))),
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-//allow only cpf or cnpj with mask
-
-                                FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d{0,14}')),
-                              ],
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Por favor, informe o documento';
-                                }
-
-                                if (value.length < 11) {
-                                  return 'CPF inválido';
-                                }
-
-                                if (value.length > 11 && value.length < 14) {
-                                  return 'CNPJ inválido';
-                                }
-
-                                return null;
-                              },
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            TextFormField(
-                              controller: _entregueDetalhamentoController,
-                              decoration: const InputDecoration(
-                                  labelText: 'Detalhamento da entrega',
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(10.0)))),
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            ElevatedButton(
-                              onPressed: () async {
-                                if (_formKeyEntregue.currentState!.validate()) {
-                                  _assinatura =
-                                      await _handleSignaturePageNavigation();
-                                  SystemChrome.setPreferredOrientations(
-                                    [
-                                      DeviceOrientation.portraitUp,
-                                    ],
-                                  );
-                                  if (_assinatura != null) {
-                                    Navigator.of(context).pop();
-                                    setState(() {
-                                      _statusInformado = true;
-                                    });
-                                  }
-                                }
-                              },
-                              child: const Text('Colher Assinatura'),
-                            )
-                          ]),
-                    ),
-                  ),
-                );
-              },
-              child: const Text('Sim'),
-            ),
-          ],
-        ),
-      ],
+      ),
     );
   }
 
@@ -233,57 +313,76 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
   _naoEntregueWidget() {
     // image from path to base64
 
-    return Form(
-      key: _formKeyNaoEntregue,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'Status informado',
-          ),
-          Image.file(
-            height: 400.0,
-            width: 400.0,
-            fit: BoxFit.fitHeight,
-            File(
-              _foto.toString(),
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _statusInformado = false;
-                    _foto = null;
-                    _assinatura = null;
-                  });
-                },
-                child: const Text('Alterar'),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Form(
+        key: _formKeyNaoEntregue,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              height: 400,
+              width: 400,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black),
+                borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                image: DecorationImage(
+                  image: FileImage(
+                    File(
+                      _foto.toString(),
+                    ),
+                  ),
+                  fit: BoxFit.cover,
+                ),
               ),
-              ElevatedButton(
-                onPressed: sendToJarvisNaoEntregue,
-                child: Text('enviar'),
-              )
-            ],
-          ),
-          TextFormField(
-            controller: _naoEntregueController,
-            decoration: const InputDecoration(
-              labelText: 'Explique o motivo da não entrega',
             ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Por favor, informe o motivo da não entrega';
-              }
-              if (value.length < 7) {
-                return 'Por favor, informe um motivo mais detalhado';
-              }
-              return null;
-            },
-          ),
-        ],
+            SizedBox(
+              height: 10,
+            ),
+            TextFormField(
+              controller: _naoEntregueController,
+              decoration: const InputDecoration(
+                labelText: 'Explique o motivo da não entrega',
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10.0))),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, informe o motivo da não entrega';
+                }
+                if (value.length < 7) {
+                  return 'Por favor, informe um motivo mais detalhado';
+                }
+                return null;
+              },
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _statusInformado = false;
+                      _foto = null;
+                      _assinatura = null;
+                    });
+                  },
+                  child: const Text('Voltar'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                  ),
+                  onPressed: sendToJarvisNaoEntregue,
+                  child: Text('Enviar'),
+                )
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -421,53 +520,48 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          'Status informado',
-        ),
-        Card(
-          child: ListView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: cliente.pedidosDevenda.length,
-            itemBuilder: (context, index) => Card(
-              child: ListTile(
-                  title: Center(
-                      child: Text('Pedido de Venda ' +
-                          cliente.pedidosDevenda[index].codigo)),
-                  subtitle: ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: cliente.pedidosDevenda[index].ctn00010.length,
-                    itemBuilder: (context, innerIndex) {
-                      var pedidoDeVenda =
-                          cliente.pedidosDevenda[index].ctn00010[innerIndex];
-
-                      return Card(
-                        child: ListTile(
-                          title: Center(child: Text(pedidoDeVenda.descricao)),
-                          subtitle: Text(pedidoDeVenda.quantidade),
-                        ),
-                      );
-                    },
-                  )),
+        Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Container(
+            width: 400,
+            height: 400,
+            decoration: BoxDecoration(
+              border: //rounded border
+                  Border.all(
+                color: Colors.black,
+                width: 1,
+              ),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              image: DecorationImage(
+                image: // Image from base64 string
+                    MemoryImage(
+                  base64Decode(_assinatura.toString()),
+                ),
+                fit: BoxFit.fitWidth,
+              ),
             ),
           ),
         ),
-        Image.memory(
-          fit: BoxFit.fitHeight,
-          Uint8List.fromList(
-            base64Decode(
-              _assinatura.toString(),
-            ),
+        ListTile(
+          title: Text('Recebido por: ' + _entregueNomeController.text),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Documento: ' + _entregueDocumentoController.text),
+              Text(_entregueDetalhamentoController.text == ''
+                  ? 'Sem detalhamento'
+                  : _entregueDetalhamentoController.text),
+            ],
           ),
         ),
-        Text(_entregueNomeController.text),
-        Text(_entregueDocumentoController.text),
-        Text(_entregueDetalhamentoController.text),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
               onPressed: () {
                 setState(() {
                   _statusInformado = false;
@@ -475,9 +569,12 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
                   _assinatura = null;
                 });
               },
-              child: const Text('Alterar'),
+              child: const Text('Voltar'),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+              ),
               onPressed: () {
                 sendToJarvisEntregue();
               },
@@ -521,17 +618,134 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
     }
   }
 
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     _createArgs();
     return Scaffold(
+      key: _scaffoldKey,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: const Text('Você chegou até aqui'),
+        title: Text('Romaneio ${codigoRomaneio}'),
       ),
       body: SingleChildScrollView(
-        child: Center(
-            child: _statusInformado ? _statusWidget() : _askDeliveredWidget()),
+        child: Column(
+          children: [
+            Center(
+                child:
+                    _statusInformado ? _statusWidget() : _askDeliveredWidget()),
+          ],
+        ),
       ),
     );
+  }
+}
+
+class CNPJ {
+  static String mask(String value) {
+    return value
+        .replaceAllMapped(
+          RegExp(r'(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})'),
+          (match) =>
+              '${match[1]}.${match[2]}.${match[3]}/${match[4]}-${match[5]}',
+        )
+        .replaceAll(RegExp(r'[^0-9]'), '');
+  }
+
+  static String unmask(String value) {
+    return value.replaceAll(RegExp(r'[^0-9]'), '');
+  }
+
+  static bool isValid(String value) {
+    if (value.isEmpty) return false;
+
+    final unmasked = unmask(value);
+    if (unmasked.length != 14) return false;
+
+    final numbers = unmasked.split('').map(int.parse).toList();
+
+    var sum = 0;
+    for (var i = 0; i < 12; i++) {
+      sum += numbers[i] * (13 - (i + 1));
+    }
+
+    var result = (sum % 11);
+    if (result < 2) {
+      result = 0;
+    } else {
+      result = 11 - result;
+    }
+
+    if (result != numbers[12]) return false;
+
+    sum = 0;
+    for (var i = 0; i < 13; i++) {
+      sum += numbers[i] * (14 - (i + 1));
+    }
+
+    result = (sum % 11);
+    if (result < 2) {
+      result = 0;
+    } else {
+      result = 11 - result;
+    }
+
+    if (result != numbers[13]) return false;
+
+    return true;
+  }
+}
+
+class CPF {
+  static String mask(String value) {
+    return value
+        .replaceAllMapped(
+          RegExp(r'(\d{3})(\d{3})(\d{3})(\d{2})'),
+          (match) => '${match[1]}.${match[2]}.${match[3]}-${match[4]}',
+        )
+        .replaceAll(RegExp(r'[^0-9]'), '');
+  }
+
+  static String unmask(String value) {
+    return value.replaceAll(RegExp(r'[^0-9]'), '');
+  }
+
+  static bool isValid(String value) {
+    if (value.isEmpty) return false;
+
+    final unmasked = unmask(value);
+    if (unmasked.length != 11) return false;
+
+    final numbers = unmasked.split('').map(int.parse).toList();
+    final firstDigit = numbers[9];
+    final secondDigit = numbers[10];
+
+    var sum = 0;
+    for (var i = 0; i < 9; i++) {
+      sum += numbers[i] * (10 - i);
+    }
+
+    var mod = sum % 11;
+    if (mod < 2) {
+      mod = 0;
+    } else {
+      mod = 11 - mod;
+    }
+
+    if (mod != firstDigit) return false;
+
+    sum = 0;
+    for (var i = 0; i < 10; i++) {
+      sum += numbers[i] * (11 - i);
+    }
+
+    mod = sum % 11;
+    if (mod < 2) {
+      mod = 0;
+    } else {
+      mod = 11 - mod;
+    }
+
+    return mod == secondDigit;
   }
 }

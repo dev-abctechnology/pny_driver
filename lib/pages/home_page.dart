@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
+
 import 'package:intl/intl.dart';
 import 'package:pny_driver/domain/datasource/romaneio_datasource.dart';
 import 'package:pny_driver/domain/models/romaneio_lite_model.dart';
 import 'package:pny_driver/roteiro/romaneio_details_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../roteiro/store/roteiro_store.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -41,6 +38,7 @@ class _HomePageState extends State<HomePage> {
     _date = DateTime.now().toString();
     isLoggedIn();
     initializeSharedPreferences();
+    initialSearch();
   }
 
   _romaneioSelectedHandler(String id) async {
@@ -76,14 +74,6 @@ class _HomePageState extends State<HomePage> {
 
   initialSearch() async {
 //create a loading dialog
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        });
 
     try {
       await dataSource.getRomaneiosLite('EDSON').then((value) {
@@ -98,9 +88,7 @@ class _HomePageState extends State<HomePage> {
     } catch (e, s) {
       print('error: $e');
       print('stack: $s');
-    } finally {
-      Navigator.of(context).pop();
-    }
+    } finally {}
   }
 
   List<RomaneioLite> romaneios = [];
@@ -109,56 +97,47 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Bem vindo'),
+        title: Text('Selecione um romaneio'),
       ),
-      body: SingleChildScrollView(
-          child: Column(
-        children: [
-          // TextFormField(
-          //   controller: idcontroller,
-          // ),
-          Text(nome),
-          ElevatedButton(
-              onPressed: () {
-                initialSearch();
-              },
-              child: const Text('Buscar')),
-          ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: romaneios.length,
-              padding: const EdgeInsets.all(8),
-              itemBuilder: (BuildContext context, int index) {
-                String date =
-                    DateFormat('dd/MM/yyyy').format(DateTime.parse(_date));
-                return Card(
-                  child: InkWell(
-                    onTap: () {
-                      _romaneioSelectedHandler(romaneios[index].id);
-                    },
-                    child: Column(
-                      children: [
-                        // card with romaneio info
-                        ListTile(
-                          title: Text(
-                            'Código: ' + romaneios[index].code,
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 20),
-                          ),
-                          subtitle: Text(
-                              'Data: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(romaneios[index].deliveryDate))}',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              )),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await initialSearch();
+        },
+        child: ListView.builder(
+            itemCount: romaneios.length,
+            physics:
+                BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+            padding: const EdgeInsets.all(8),
+            itemBuilder: (BuildContext context, int index) {
+              String date =
+                  DateFormat('dd/MM/yyyy').format(DateTime.parse(_date));
+              return Card(
+                child: InkWell(
+                  onTap: () {
+                    _romaneioSelectedHandler(romaneios[index].id);
+                  },
+                  child: Column(
+                    children: [
+                      // card with romaneio info
+                      ListTile(
+                        title: Text(
+                          'Código: ' + romaneios[index].code,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 20),
                         ),
-                      ],
-                    ),
+                        subtitle: Text(
+                            'Data: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(romaneios[index].deliveryDate))}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            )),
+                      ),
+                    ],
                   ),
-                );
-              }),
-        ],
-      )),
+                ),
+              );
+            }),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(

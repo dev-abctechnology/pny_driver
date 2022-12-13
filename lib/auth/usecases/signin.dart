@@ -52,6 +52,10 @@ class AuthUseCase {
       print(e);
       print(s);
       return Left(e);
+    } catch (e, s) {
+      print(e);
+      print(s);
+      return Left(AuthException(message: 'Something went wrong'));
     }
   }
 

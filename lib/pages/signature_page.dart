@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'dart:developer' as developer;
 import 'dart:ui' as ui;
 import 'package:hand_signature/signature.dart';
+import 'package:pny_driver/config/custom_theme.dart';
 
 class SignaturePage extends StatefulWidget {
   const SignaturePage({Key? key}) : super(key: key);
@@ -57,7 +58,7 @@ class SignaturePageState extends State<SignaturePage> {
   final control = HandSignatureControl(
     threshold: 5.0,
     smoothRatio: 0.65,
-    velocityRange: 6.0,
+    velocityRange: 2.0,
   );
 
   late final HandSignature _signaturePadWidget;
@@ -91,7 +92,7 @@ class SignaturePageState extends State<SignaturePage> {
     );
     _signaturePadWidget = HandSignature(
       control: control,
-      color: Colors.blueGrey,
+      color: Palette.persianasColor,
       width: 1.0,
       maxWidth: 3.0,
       type: SignatureDrawType.arc,
