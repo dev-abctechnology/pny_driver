@@ -218,14 +218,10 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
           _polylines.add(Polyline(
               polylineId: PolylineId(pointDestination.toString()),
               width: 5,
-              patterns: [
-                PatternItem.dash(20),
-                PatternItem.gap(10),
-              ],
+              geodesic: true,
               jointType: JointType.round,
               startCap: Cap.roundCap,
               endCap: Cap.roundCap,
-              zIndex: 1,
               points: result.points
                   .map((e) => LatLng(e.latitude, e.longitude))
                   .toList(),
@@ -607,7 +603,8 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
       final romaneio = widget.romaneio;
 
       List<ClienteRomaneio> clientes = romaneio.data.clientesRomaneio;
-
+      clientes
+          .remove(clientes.firstWhere((element) => element.entregue == true));
       List<EnderecoTemplate> enderecos =
           _identifyDeliveryAddress(clientes).toList();
 
@@ -623,6 +620,10 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
       if (response.data['status'] == 'ZERO_RESULTS') {
         throw Exception(
             'Não foi possível encontrar uma rota, verifique os endereços do romaneio');
+      }
+      if (response.data['status'] == 'MAX_WAYPOINTS_EXCEEDED') {
+        throw Exception(
+            'O número máximo de paradas foi excedido, tente novamente com menos endereços');
       }
 
       directionSuggestion = DirectionSuggestion.fromJson(response.data);
@@ -669,7 +670,7 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
         _sorted = false;
       });
       Navigator.of(context).pop();
-      _erroSnackBar(e.toString());
+      _erroSnackBar(e.toString().split('Exception: ')[1]);
 
       throw Exception(e);
     }
@@ -696,10 +697,9 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
   }
 
   Iterable<EnderecoTemplate> _identifyDeliveryAddress(
-          List<ClienteRomaneio> clientes) =>
-      clientes.map((e) => e.enderecos
-          .where((element) => element.tipo.label == 'Endereço Entrega')
-          .first);
+      List<ClienteRomaneio> clientes) {
+    return clientes.map((e) => e.enderecos.first);
+  }
 
   bool _setMarkers(GeoData destination) {
     return _marcadores.add(Marker(
@@ -1381,7 +1381,7 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
           );
         });
       } catch (e, s) {
-        _erroSnackBar(e.toString());
+        _erroSnackBar(e.toString().substring(0, 11));
         developer.log(e.toString(), stackTrace: s);
 
         Navigator.of(context).pop();
@@ -1396,15 +1396,19 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
       _erroSnackBar(e.toString());
       developer.log(e.toString(), stackTrace: s);
     }
-    _clearAll();
-    var sorted = await _sortWaypoints();
-    setState(() {
-      _setLocationToAddres();
-      romaneio.data.clientesRomaneio.clear();
-      romaneio.data.clientesRomaneio.addAll(sorted);
-    });
-    _createMarkersFromAddress();
-    _createPolylines();
-    _changeScaleFactor();
+    try {
+      _clearAll();
+      var sorted = await _sortWaypoints();
+      setState(() {
+        _setLocationToAddres();
+        romaneio.data.clientesRomaneio.clear();
+        romaneio.data.clientesRomaneio.addAll(sorted);
+      });
+      _createMarkersFromAddress();
+      _createPolylines();
+      _changeScaleFactor();
+    } catch (e, s) {
+      throw e;
+    }
   }
 }

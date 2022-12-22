@@ -247,17 +247,17 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
                     return null;
                   },
                 ),
-                SizedBox(
-                  height: 10,
-                ),
-                TextFormField(
-                  controller: _entregueDetalhamentoController,
-                  decoration: const InputDecoration(
-                      labelText: 'Detalhamento da entrega',
-                      border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(10.0)))),
-                ),
+                // SizedBox(
+                //   height: 10,
+                // ),
+                // TextFormField(
+                //   controller: _entregueDetalhamentoController,
+                //   decoration: const InputDecoration(
+                //       labelText: 'Detalhamento da entrega',
+                //       border: OutlineInputBorder(
+                //           borderRadius:
+                //               BorderRadius.all(Radius.circular(10.0)))),
+                // ),
                 SizedBox(
                   height: 10,
                 ),
@@ -453,6 +453,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
     }
   }
 
+  List<PedidoEntregue> pedidos = [];
   void sendToJarvisEntregue() {
     //show loading dialog
     showDialog(
@@ -470,16 +471,29 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
       //format dateNow to yyyy-MM-dd HH:mm:ss
       dateNow = dateNow.substring(0, 10) + ' ' + dateNow.substring(11, 19);
 
-      List<PedidoEntregue> pedidos = [];
+//format dateNow to dd-MM-yyyy às HH:mm
+      var dataHoraEntrega = dateNow.substring(8, 10) +
+          '/' +
+          dateNow.substring(5, 7) +
+          '/' +
+          dateNow.substring(0, 4) +
+          ' às ' +
+          dateNow.substring(11, 16);
+
+      pedidos = [];
       for (var i = 0; i < cliente.pedidosDevenda.length; i++) {
         pedidos.add(PedidoEntregue(
           cliente.pedidosDevenda[i].codigo,
           assinaturaBase64,
-          'A2',
-          'Entregue',
-          _entregueDetalhamentoController.text,
+          _pedidosEntregues[i] ? 'A3' : 'A4',
+          _pedidosEntregues[i] ? 'Entregue' : 'Entregue com restrição',
+          _pedidosEntregues[i]
+              ? 'Entregue com sucesso às $dataHoraEntrega'
+              : 'Entregue com restrição às $dataHoraEntrega\nDetalhamento: ${_detalhamentoControllers[i].text}',
         ));
       }
+
+      print(pedidos.map((e) => e.detalhamento).toList());
 
       jarvisController
           .updateRomaneio(RomaneioEntregue(
@@ -516,73 +530,153 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
     }
   }
 
+  final _restricaoKey = GlobalKey<FormState>();
   _entregueWidget() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Container(
-            width: 400,
-            height: 400,
-            decoration: BoxDecoration(
-              border: //rounded border
-                  Border.all(
-                color: Colors.black,
-                width: 1,
-              ),
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              image: DecorationImage(
-                image: // Image from base64 string
-                    MemoryImage(
-                  base64Decode(_assinatura.toString()),
+    return Form(
+      key: _restricaoKey,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Container(
+              width: 400,
+              height: 400,
+              decoration: BoxDecoration(
+                border: //rounded border
+                    Border.all(
+                  color: Colors.black,
+                  width: 1,
                 ),
-                fit: BoxFit.fitWidth,
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                image: DecorationImage(
+                  image: // Image from base64 string
+                      MemoryImage(
+                    base64Decode(_assinatura.toString()),
+                  ),
+                  fit: BoxFit.fitWidth,
+                ),
               ),
             ),
           ),
-        ),
-        ListTile(
-          title: Text('Recebido por: ' + _entregueNomeController.text),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          ListTile(
+            title: Text('Recebido por: ' + _entregueNomeController.text),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Documento: ' + _entregueDocumentoController.text),
+                Text(_entregueDetalhamentoController.text == ''
+                    ? 'Sem detalhamento'
+                    : _entregueDetalhamentoController.text),
+              ],
+            ),
+          ),
+          Divider(),
+          Text(
+            'Marque os pedidos entregues sem restrições',
+            style: TextStyle(fontSize: 20),
+            textAlign: TextAlign.center,
+          ),
+          // grid view with checkbox for every cliente.pedidosDevenda
+          ListView.separated(
+            separatorBuilder: (context, index) {
+              return Divider();
+            },
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: cliente.pedidosDevenda.length,
+            itemBuilder: (BuildContext context, int index) {
+              return CheckboxListTile(
+                title: Column(
+                  children: [
+                    _pedidosEntregues[index]
+                        ? Text(cliente.pedidosDevenda[index].codigo +
+                            ' - Entregue sem restrições')
+                        : TextFormField(
+                            validator: (value) {
+                              if (value == null ||
+                                  value.isEmpty && !_pedidosEntregues[index]) {
+                                return 'Informe o motivo da restrição';
+                              }
+                              return null;
+                            },
+                            controller: _detalhamentoControllers[index],
+                            decoration: InputDecoration(
+                              labelText:
+                                  'Informe a restrição do pedido ${cliente.pedidosDevenda[index].codigo}',
+                              border: OutlineInputBorder(),
+                            ),
+                          )
+                  ],
+                ),
+                value: _pedidosEntregues[index],
+                onChanged: (bool? value) {
+                  setState(() {
+                    _pedidosEntregues[index] = value!;
+                  });
+                },
+              );
+            },
+          ),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Text('Documento: ' + _entregueDocumentoController.text),
-              Text(_entregueDetalhamentoController.text == ''
-                  ? 'Sem detalhamento'
-                  : _entregueDetalhamentoController.text),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _statusInformado = false;
+                    _foto = null;
+                    _assinatura = null;
+                  });
+                },
+                child: const Text('Voltar'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                ),
+                onPressed: () {
+                  //show dialog confirm send
+                  if (_restricaoKey.currentState!.validate()) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text(
+                              'Tem certeza que deseja confirmar a entrega?'),
+                          content: const Text(
+                              'Ao enviar, não será possível alterar os dados informados.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text('Cancelar'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                sendToJarvisEntregue();
+                              },
+                              child: Text('Enviar'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                },
+                child: const Text('Enviar'),
+              ),
             ],
           ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-              ),
-              onPressed: () {
-                setState(() {
-                  _statusInformado = false;
-                  _foto = null;
-                  _assinatura = null;
-                });
-              },
-              child: const Text('Voltar'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-              ),
-              onPressed: () {
-                sendToJarvisEntregue();
-              },
-              child: const Text('Enviar'),
-            ),
-          ],
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -601,6 +695,8 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
     WidgetsFlutterBinding.ensureInitialized();
   }
 
+  List<bool> _pedidosEntregues = [];
+  List<TextEditingController> _detalhamentoControllers = [];
   Map args = {};
   late ClienteRomaneio cliente;
   late String codigoRomaneio;
@@ -611,6 +707,10 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
         args = ModalRoute.of(context)!.settings.arguments as Map;
         cliente = args['cliente'];
         codigoRomaneio = args['codigoRomaneio'];
+        _pedidosEntregues =
+            List.generate(cliente.pedidosDevenda.length, (index) => false);
+        _detalhamentoControllers = List.generate(
+            cliente.pedidosDevenda.length, (index) => TextEditingController());
         print(args);
       } catch (e) {
         print(e);

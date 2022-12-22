@@ -38,7 +38,11 @@ class RomaneioDataSource {
           ],
           "sort": {"fieldName": "data.slt_00006", "type": "DESC"},
           "paginator": {"page": 0, "size": 10}
-        });
+        }).onError((error, stackTrace) {
+      print(error);
+
+      throw Exception('Erro ao buscar romaneios');
+    });
     final romaneios = response.data['content'] as List;
     //retone somente os 10 primeiros romaneios da lista
 

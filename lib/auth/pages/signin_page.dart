@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:pny_driver/auth/token/token_store.dart';
+import 'package:pny_driver/config/custom_theme.dart';
 import 'package:provider/provider.dart';
 
 import '../../pages/home_page.dart';
@@ -18,8 +19,8 @@ class SignIn extends StatefulWidget {
 
 class _SignInState extends State<SignIn> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: '05664267000105');
-  final _passwordController = TextEditingController(text: '@BCtech2022@');
+  final _emailController = TextEditingController(text: '');
+  final _passwordController = TextEditingController(text: '');
   final _authUseCase = AuthUseCase(Dio());
   bool _isLoading = false;
 
@@ -46,14 +47,9 @@ class _SignInState extends State<SignIn> {
     return Navigator.of(context).pushNamed('/');
   }
 
+  bool _obscurePassword = true;
   @override
   Widget build(BuildContext context) {
-    //create a login screen with a form and a button to submit the form and login the user
-    // the page musth have a background image and a logo on the top of the page and the forms below must be in a container with a white background and rounded corners
-    // the form must have a text field for the email and a text field for the password
-    // the form must have a button to submit the form
-    // the form must have a button to navigate to the signup page
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -77,11 +73,11 @@ class _SignInState extends State<SignIn> {
                   width: 200,
                   height: 200,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    color: Palette.persianasColor.withAlpha(150),
+                    borderRadius: BorderRadius.circular(180),
                     image: DecorationImage(
                       image: AssetImage(
-                        'assets/images/logo.png',
+                        'assets/icon_driver.png',
                       ),
                       fit: BoxFit.cover,
                     ),
@@ -93,7 +89,7 @@ class _SignInState extends State<SignIn> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Palette.persianasColor.shade300.withAlpha(230),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Form(
@@ -118,9 +114,20 @@ class _SignInState extends State<SignIn> {
                           height: 20,
                         ),
                         TextFormField(
+                          obscureText: _obscurePassword,
                           controller: _passwordController,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: 'Senha',
+                            suffixIcon: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                              icon: _obscurePassword
+                                  ? const Icon(Icons.visibility_off)
+                                  : const Icon(Icons.visibility),
+                            ),
                             border: OutlineInputBorder(),
                           ),
                           validator: (value) {
@@ -177,7 +184,5 @@ class _SignInState extends State<SignIn> {
         ),
       ),
     );
-
-    return Scaffold();
   }
 }

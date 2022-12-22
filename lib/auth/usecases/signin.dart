@@ -75,47 +75,56 @@ class AuthUseCase {
       'Content-Type': 'application/json',
     };
 
-    var response = await dio.post(
-        'http://qas-abctech.ddns.net:8080/jarvis/api/core/users/filter',
-        data: {
-          "filters": [
-            {
-              "fieldName": "username",
-              "value": '53026993000137',
-              "expression": "CONTAINS"
-            }
-          ]
-        });
+    try {
+      var response = await dio.post(
+          'http://qas-abctech.ddns.net:8080/jarvis/api/core/users/filter',
+          data: {
+            "filters": [
+              {
+                "fieldName": "username",
+                "value": '$username',
+                "expression": "CONTAINS"
+              }
+            ]
+          });
+      print(response.data);
+      if (response.statusCode == 200) {
+        var resposta = await response.data;
+        print(resposta);
+        var name = resposta[0]['name'];
+        var email = resposta[0]['email'];
+        var profile = resposta[0]['profile'];
+        print(profile);
+        if (profile == 'Motorista') {
+          print('tem acesso');
+        } else {
+          print('não tem acesso');
+          developer.log('Esse usuário NÃO DEVE TER ACESSO AO SISTEMA',
+              name: 'ATENÇÃO',
+              error: 'Esse usuário NÃO DEVE TER ACESSO AO SISTEMA');
+          developer.log('Esse usuário NÃO DEVE TER ACESSO AO SISTEMA',
+              name: 'ATENÇÃO',
+              error: 'Esse usuário NÃO DEVE TER ACESSO AO SISTEMA');
+          developer.log('Esse usuário NÃO DEVE TER ACESSO AO SISTEMA',
+              name: 'ATENÇÃO',
+              error: 'Esse usuário NÃO DEVE TER ACESSO AO SISTEMA');
+          developer.log('Esse usuário NÃO DEVE TER ACESSO AO SISTEMA',
+              name: 'ATENÇÃO',
+              error: 'Esse usuário NÃO DEVE TER ACESSO AO SISTEMA');
+        }
 
-    if (response.statusCode == 200) {
-      var resposta = await response.data;
-      print(resposta);
-      var name = resposta[0]['name'];
-      var email = resposta[0]['email'];
-      var profile = resposta[0]['profile'];
-      if (profile == 'Motorista') {
-        print('tem acesso');
+        var prefs = await SharedPreferences.getInstance();
+        prefs.setString('name', name);
       } else {
-        print('não tem acesso');
-        developer.log('Esse usuário NÃO DEVE TER ACESSO AO SISTEMA',
-            name: 'ATENÇÃO',
-            error: 'Esse usuário NÃO DEVE TER ACESSO AO SISTEMA');
-        developer.log('Esse usuário NÃO DEVE TER ACESSO AO SISTEMA',
-            name: 'ATENÇÃO',
-            error: 'Esse usuário NÃO DEVE TER ACESSO AO SISTEMA');
-        developer.log('Esse usuário NÃO DEVE TER ACESSO AO SISTEMA',
-            name: 'ATENÇÃO',
-            error: 'Esse usuário NÃO DEVE TER ACESSO AO SISTEMA');
-        developer.log('Esse usuário NÃO DEVE TER ACESSO AO SISTEMA',
-            name: 'ATENÇÃO',
-            error: 'Esse usuário NÃO DEVE TER ACESSO AO SISTEMA');
+        print(response.statusCode);
+        throw Exception('Erro ao buscar usuário');
       }
-
-      var prefs = await SharedPreferences.getInstance();
-      prefs.setString('name', name);
-    } else {
-      print(response.statusCode);
-      throw Exception('Erro ao buscar usuário');
+    } on DioError catch (e, s) {
+      print(e);
+      print(s);
+    } catch (e, s) {
+      print(e);
+      print(s);
     }
   }
 }
