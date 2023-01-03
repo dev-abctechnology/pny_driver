@@ -1,5 +1,3 @@
-import 'package:pny_driver/domain/models/romaneio_model.dart';
-
 class RomaneioLite {
   late final String id;
   late final String code;

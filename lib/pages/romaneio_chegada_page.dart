@@ -1,13 +1,12 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print
+
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:brasil_fields/brasil_fields.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_background/flutter_background.dart';
-import 'package:http/http.dart';
 import 'package:pny_driver/domain/models/pedido_entregue.dart';
 import 'package:pny_driver/domain/models/romaneio_model.dart';
 import 'dart:developer' as developer;
@@ -77,8 +76,8 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Flexible(
-                    child: const Text(
+                  const Flexible(
+                    child: Text(
                       'Pedidos: ',
                       style: TextStyle(fontSize: 20),
                     ),
@@ -175,7 +174,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
       builder: (context) => SingleChildScrollView(
         child: Container(
           padding: MediaQuery.of(context).viewInsets,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(20.0),
@@ -188,10 +187,10 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
               key: _formKeyEntregue,
               child:
                   Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-                Center(
+                const Center(
                     child: Text('Entrega efetuada',
                         style: TextStyle(fontSize: 20))),
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 TextFormField(
@@ -208,7 +207,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
                     return null;
                   },
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 TextFormField(
@@ -258,10 +257,10 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
                 //           borderRadius:
                 //               BorderRadius.all(Radius.circular(10.0)))),
                 // ),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
-                Container(
+                SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -325,7 +324,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
               width: 400,
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.black),
-                borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                 image: DecorationImage(
                   image: FileImage(
                     File(
@@ -336,7 +335,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
                 ),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             TextFormField(
@@ -377,7 +376,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
                     backgroundColor: Colors.green,
                   ),
                   onPressed: sendToJarvisNaoEntregue,
-                  child: Text('Enviar'),
+                  child: const Text('Enviar'),
                 )
               ],
             ),
@@ -404,7 +403,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
             base64Encode(File(_foto.toString()).readAsBytesSync());
         String dateNow = DateTime.now().toIso8601String();
         //format dateNow to yyyy-MM-dd HH:mm:ss
-        dateNow = dateNow.substring(0, 10) + ' ' + dateNow.substring(11, 19);
+        dateNow = '${dateNow.substring(0, 10)} ${dateNow.substring(11, 19)}';
 
         List<PedidoEntregue> pedidos = [];
         for (var i = 0; i < cliente.pedidosDevenda.length; i++) {
@@ -445,7 +444,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
         //close loading dialog
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Erro ao enviar para o jarvis'),
           ),
         );
@@ -469,16 +468,11 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
       String assinaturaBase64 = _assinatura.toString();
       String dateNow = DateTime.now().toIso8601String();
       //format dateNow to yyyy-MM-dd HH:mm:ss
-      dateNow = dateNow.substring(0, 10) + ' ' + dateNow.substring(11, 19);
+      dateNow = '${dateNow.substring(0, 10)} ${dateNow.substring(11, 19)}';
 
 //format dateNow to dd-MM-yyyy às HH:mm
-      var dataHoraEntrega = dateNow.substring(8, 10) +
-          '/' +
-          dateNow.substring(5, 7) +
-          '/' +
-          dateNow.substring(0, 4) +
-          ' às ' +
-          dateNow.substring(11, 16);
+      var dataHoraEntrega =
+          '${dateNow.substring(8, 10)}/${dateNow.substring(5, 7)}/${dateNow.substring(0, 4)} às ${dateNow.substring(11, 16)}';
 
       pedidos = [];
       for (var i = 0; i < cliente.pedidosDevenda.length; i++) {
@@ -561,19 +555,19 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
             ),
           ),
           ListTile(
-            title: Text('Recebido por: ' + _entregueNomeController.text),
+            title: Text('Recebido por: ${_entregueNomeController.text}'),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Documento: ' + _entregueDocumentoController.text),
+                Text('Documento: ${_entregueDocumentoController.text}'),
                 Text(_entregueDetalhamentoController.text == ''
                     ? 'Sem detalhamento'
                     : _entregueDetalhamentoController.text),
               ],
             ),
           ),
-          Divider(),
-          Text(
+          const Divider(),
+          const Text(
             'Marque os pedidos entregues sem restrições',
             style: TextStyle(fontSize: 20),
             textAlign: TextAlign.center,
@@ -581,7 +575,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
           // grid view with checkbox for every cliente.pedidosDevenda
           ListView.separated(
             separatorBuilder: (context, index) {
-              return Divider();
+              return const Divider();
             },
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
@@ -591,8 +585,8 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
                 title: Column(
                   children: [
                     _pedidosEntregues[index]
-                        ? Text(cliente.pedidosDevenda[index].codigo +
-                            ' - Entregue sem restrições')
+                        ? Text(
+                            '${cliente.pedidosDevenda[index].codigo} - Entregue sem restrições')
                         : TextFormField(
                             validator: (value) {
                               if (value == null ||
@@ -605,7 +599,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
                             decoration: InputDecoration(
                               labelText:
                                   'Informe a restrição do pedido ${cliente.pedidosDevenda[index].codigo}',
-                              border: OutlineInputBorder(),
+                              border: const OutlineInputBorder(),
                             ),
                           )
                   ],
@@ -656,14 +650,14 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
                               onPressed: () {
                                 Navigator.pop(context);
                               },
-                              child: Text('Cancelar'),
+                              child: const Text('Cancelar'),
                             ),
                             TextButton(
                               onPressed: () {
                                 Navigator.pop(context);
                                 sendToJarvisEntregue();
                               },
-                              child: Text('Enviar'),
+                              child: const Text('Enviar'),
                             ),
                           ],
                         );
@@ -688,7 +682,6 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     jarvisController = RomaneioJarvisController(Dio());
 
@@ -726,7 +719,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
       key: _scaffoldKey,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: Text('Romaneio ${codigoRomaneio}'),
+        title: Text('Romaneio $codigoRomaneio'),
       ),
       body: SingleChildScrollView(
         child: Column(

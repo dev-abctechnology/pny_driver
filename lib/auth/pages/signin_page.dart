@@ -1,12 +1,11 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:pny_driver/auth/token/token_store.dart';
 import 'package:pny_driver/config/custom_theme.dart';
 import 'package:provider/provider.dart';
 
-import '../../pages/home_page.dart';
 import '../auth_repository.dart';
 import '../usecases/signin.dart';
 
@@ -26,7 +25,6 @@ class _SignInState extends State<SignIn> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -75,7 +73,7 @@ class _SignInState extends State<SignIn> {
                   decoration: BoxDecoration(
                     color: Palette.persianasColor.withAlpha(150),
                     borderRadius: BorderRadius.circular(180),
-                    image: DecorationImage(
+                    image: const DecorationImage(
                       image: AssetImage(
                         'assets/icon_driver.png',
                       ),
@@ -128,7 +126,7 @@ class _SignInState extends State<SignIn> {
                                   ? const Icon(Icons.visibility_off)
                                   : const Icon(Icons.visibility),
                             ),
-                            border: OutlineInputBorder(),
+                            border: const OutlineInputBorder(),
                           ),
                           validator: (value) {
                             if (value!.isEmpty) {
@@ -141,8 +139,8 @@ class _SignInState extends State<SignIn> {
                           height: 20,
                         ),
                         _isLoading
-                            ? CircularProgressIndicator()
-                            : Container(
+                            ? const CircularProgressIndicator()
+                            : SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton(
                                   onPressed: () async {
@@ -164,8 +162,6 @@ class _SignInState extends State<SignIn> {
                                       if (result.isRight) {
                                         storeToken(result.right);
                                         navigateHome(context);
-                                        // ignore: use_build_context_synchronously
-
                                       } else {
                                         showErrorSnackBar(result.left.message);
                                       }

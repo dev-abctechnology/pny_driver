@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 
 import 'package:pny_driver/domain/models/romaneio_general_store.dart';

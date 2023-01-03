@@ -1,8 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:camera/camera.dart';
 
 class EntregaNaoRealizada extends StatefulWidget {
@@ -42,7 +40,7 @@ class _EntregaRealizadaState extends State<EntregaNaoRealizada> {
     }
   }
 
-  FlashMode _flashMode = FlashMode.auto;
+  final FlashMode _flashMode = FlashMode.auto;
   Future<void> _previewCamera(CameraDescription camera) async {
     final CameraController cameraController = CameraController(
       camera,
@@ -112,7 +110,7 @@ class _EntregaRealizadaState extends State<EntregaNaoRealizada> {
               children: [
                 InkWell(
                   onTap: _captureInProgress ? null : _takePicture,
-                  child: Container(
+                  child: SizedBox(
                     width: 50,
                     height: 50,
                     child: Icon(
@@ -129,7 +127,7 @@ class _EntregaRealizadaState extends State<EntregaNaoRealizada> {
                     _cameraController!.setFlashMode(
                         _flashOn! ? FlashMode.torch : FlashMode.off);
                   },
-                  child: Container(
+                  child: SizedBox(
                     width: 50,
                     height: 50,
                     child: Icon(
@@ -147,7 +145,7 @@ class _EntregaRealizadaState extends State<EntregaNaoRealizada> {
   }
 
   _arquivoWidget() {
-    return Container(
+    return SizedBox(
         width: _screenSize!.width,
         height: _screenSize!.height,
         child: _imageFile == null ? _cameraPreviewWidget() : _confirmarFoto());
@@ -172,7 +170,7 @@ class _EntregaRealizadaState extends State<EntregaNaoRealizada> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 IconButton(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.check,
                     color: Colors.white,
                   ),
@@ -181,7 +179,7 @@ class _EntregaRealizadaState extends State<EntregaNaoRealizada> {
                   },
                 ),
                 IconButton(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.close,
                     color: Colors.white,
                   ),
@@ -201,7 +199,6 @@ class _EntregaRealizadaState extends State<EntregaNaoRealizada> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     _initializeCamera();
@@ -209,7 +206,6 @@ class _EntregaRealizadaState extends State<EntregaNaoRealizada> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     _cameraController?.dispose();
   }
@@ -217,7 +213,6 @@ class _EntregaRealizadaState extends State<EntregaNaoRealizada> {
   @override
   Widget build(BuildContext context) {
     _screenSize = MediaQuery.of(context).size;
-    bool _isReady = false;
     return WillPopScope(
       onWillPop: () async {
         if (_imageFile != null) {
@@ -231,7 +226,7 @@ class _EntregaRealizadaState extends State<EntregaNaoRealizada> {
       },
       child: Scaffold(
           appBar: AppBar(
-            title: Text('Camera'),
+            title: const Text('Camera'),
             backgroundColor: Colors.grey[900],
             centerTitle: true,
             elevation: 0,

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -23,7 +25,7 @@ class RomaneioDataSource {
       'X-stuff-code': 'p-pny-yromo-01'
     };
 //variable with actual date in format 2022-12-08T03
-    var date = DateTime.now().toString().substring(0, 10) + 'T03';
+    var date = '${DateTime.now().toString().substring(0, 10)}T03';
 
     print(date);
     final response = await _dio.post(
@@ -84,7 +86,7 @@ class RomaneioDataSource {
       } catch (e, s) {
         print(e);
         print(s);
-        throw e;
+        rethrow;
       }
     } else {
       throw Exception('Failed to load Romaneio');

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:pny_driver/shared/models/seletor_model.dart';
 
 class Romaneio {

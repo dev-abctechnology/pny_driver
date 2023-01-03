@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:pny_driver/config/custom_theme.dart';
 import 'package:pny_driver/domain/models/romaneio_model.dart';
 
 class ExpandableRomaneioClienteWidget extends StatefulWidget {
@@ -114,7 +113,7 @@ class _ExpandableRomaneioClienteWidgetState
               ),
               title: Text(
                 '${enderecoUm.logradouro!}, ${enderecoUm.numero!} - ${enderecoUm.bairro!} - ${enderecoUm.cidade!}',
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.w500,
                   fontSize: 18,
@@ -122,7 +121,7 @@ class _ExpandableRomaneioClienteWidgetState
               ),
               trailing: IconButton(
                   onPressed: widget.onTap,
-                  icon: Icon(Icons.arrow_forward_outlined)),
+                  icon: const Icon(Icons.arrow_forward_outlined)),
             ),
             GridView.builder(
               physics: const NeverScrollableScrollPhysics(),
@@ -133,14 +132,14 @@ class _ExpandableRomaneioClienteWidgetState
                 childAspectRatio: 2,
               ),
               itemBuilder: (BuildContext context, int index) {
-                var Pedido = cliente.pedidosDevenda[index];
+                var pedido = cliente.pedidosDevenda[index];
                 return Card(
                   elevation: 5,
                   child: Column(
                     children: [
                       ListTile(
-                        title: Text('pedido: ${Pedido.codigo}'),
-                        subtitle: Text('itens: ${Pedido.ctn00010.length}'),
+                        title: Text('pedido: ${pedido.codigo}'),
+                        subtitle: Text('itens: ${pedido.ctn00010.length}'),
                       ),
                     ],
                   ),

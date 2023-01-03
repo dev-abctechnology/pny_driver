@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -97,14 +99,14 @@ class SignaturePageState extends State<SignaturePage> {
       maxWidth: 3.0,
       type: SignatureDrawType.arc,
       onPointerDown: () {
-        if (control.lines.length > 0) {
+        if (control.lines.isNotEmpty) {
           setState(() {
             _signed = true;
           });
         }
       },
       onPointerUp: () {
-        if (control.lines.length > 0) {
+        if (control.lines.isNotEmpty) {
           setState(() {
             _signed = true;
           });
@@ -113,16 +115,7 @@ class SignaturePageState extends State<SignaturePage> {
     );
   }
 
-  double _minStrokeWidth = 1.0;
-  double _maxStrokeWidth = 2.0;
   bool _signed = false;
-
-  bool _handleDrawStart() {
-    setState(() {
-      _signed = true;
-    });
-    return false;
-  }
 
   @override
   Widget build(BuildContext context) {

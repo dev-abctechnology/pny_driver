@@ -39,7 +39,7 @@ class AddressSearch extends SearchDelegate {
       future: placeService.getPlace(query),
       builder: (context, snapshot) => query == ''
           ? Container(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: const Text('Digite o endereço'),
             )
           : snapshot.hasData

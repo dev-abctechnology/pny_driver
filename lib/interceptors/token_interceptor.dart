@@ -1,9 +1,10 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 
 class TokenVerificationInterceptor extends Interceptor {
   Dio api;
@@ -19,7 +20,7 @@ class TokenVerificationInterceptor extends Interceptor {
     if (validation.statusCode == 401) {
       print('token invalido');
       print(validation.data);
-      var refresh;
+      bool refresh;
       try {
         refresh = await refreshToken();
       } catch (e) {
@@ -53,17 +54,6 @@ class TokenVerificationInterceptor extends Interceptor {
     return super.onError(err, handler);
   }
 
-  Future<Response<dynamic>> _retry(RequestOptions requestOptions) async {
-    final options = Options(
-      method: requestOptions.method,
-      headers: requestOptions.headers,
-    );
-    return api.request<dynamic>(requestOptions.path,
-        data: requestOptions.data,
-        queryParameters: requestOptions.queryParameters,
-        options: options);
-  }
-
   Future<Response> checkToken(RequestOptions options) async {
     var dio = Dio();
 
@@ -91,15 +81,14 @@ class TokenVerificationInterceptor extends Interceptor {
     print(username);
     print(password);
 
-//dio para fazer a requisição
-    var _dio = Dio();
+    var dio = Dio();
 
-    _dio.options.headers = {
+    dio.options.headers = {
       'Authorization': 'Basic YXBwQGphcnZpcy4yMDIxOldVdHQzekdO',
       'Content-Type': 'application/x-www-form-urlencoded',
     };
 
-    final response = await _dio.post(
+    final response = await dio.post(
       'http://qas-abctech.ddns.net:8080/jarvis/oauth/token',
       data: {
         'username': username,

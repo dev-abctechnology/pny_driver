@@ -1,22 +1,19 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background/flutter_background.dart'
-    as FlutterBackground;
+    as flutter_background;
 import 'package:geocoder2/geocoder2.dart';
 import 'package:location_geocoder/location_geocoder.dart';
 import 'package:pny_driver/config/custom_theme.dart';
 import 'package:pny_driver/config/google_maps_theme.dart';
 import 'package:pny_driver/domain/models/direction_suggestion.dart';
-import 'package:pny_driver/domain/models/romaneio_custom_api_model.dart';
-import 'package:pny_driver/domain/models/romaneio_general_store.dart';
-import 'package:pny_driver/pages/widgets/expandable_card_romaneio.dart';
 import 'package:pny_driver/pages/widgets/search_bar.dart';
 import 'package:pny_driver/pages/widgets/search_bar_widget.dart';
 import 'package:pny_driver/roteiro/store/roteiro_store.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:slide_to_act/slide_to_act.dart';
 import 'dart:developer' as developer;
 import '../domain/models/romaneio_model.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -43,7 +40,7 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
   List<LatLng> polylineCoordinates = [];
   List<PolylineWayPoint> _polyLinePoints = [];
   late Romaneio romaneio;
-  Set<Marker> _marcadores = {};
+  Set<Marker> marcadores = {};
 
   final Set<Polyline> _polylines = {};
   bool _sorted = false;
@@ -54,20 +51,25 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
   late GoogleMapController _mapController;
 
   Future<void> _backgroundApp() async {
-    var androidConfig = FlutterBackground.FlutterBackgroundAndroidConfig(
+    var androidConfig = const flutter_background.FlutterBackgroundAndroidConfig(
       notificationTitle: "A caminho do próximo cliente",
       notificationText:
           "O aplicativo está rodando em segundo plano para registrar a chegada no próximo cliente, clique para voltar ao aplicativo",
       notificationImportance:
-          FlutterBackground.AndroidNotificationImportance.Default,
+          flutter_background.AndroidNotificationImportance.Default,
       enableWifiLock: true,
-      notificationIcon: FlutterBackground.AndroidResource(
+      notificationIcon: flutter_background.AndroidResource(
         name: "ic_launcher",
         defType: "mipmap",
       ),
     );
-    bool success = await FlutterBackground.FlutterBackground.initialize(
+    bool success = await flutter_background.FlutterBackground.initialize(
         androidConfig: androidConfig);
+    if (success) {
+      print("Background initialized");
+    } else {
+      print("Background failed to initialize");
+    }
   }
 
   @override
@@ -80,27 +82,6 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
     _setLocationToAddres();
 
     store = RomaneioGeneralController();
-  }
-
-  _saveTravel(
-      {suggestion,
-      date,
-      romaneio,
-      required List<RomaneioEntregue> entregas,
-      destination}) async {
-    var data = RomaneioGeneral(
-        directionSuggestion: suggestion,
-        date: date,
-        romaneio: romaneio,
-        romaneiosEntregues: entregas,
-        destination: destination);
-    var response = await store.saveTravel(data);
-
-    if (response) {
-      print('Salvo com sucesso');
-    } else {
-      print('Erro ao salvar');
-    }
   }
 
   Future<Position> _getGeoLocationPosition() async {
@@ -130,12 +111,6 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
         desiredAccuracy: LocationAccuracy.bestForNavigation);
   }
 
-  _getPositionHandler() {
-    _getGeoLocationPosition().then((value) {}).onError((error, stackTrace) {
-      return Future.error('Location services are disabled.');
-    });
-  }
-
   _setLocationToAddres() async {
     final position =
         await _getGeoLocationPosition().onError((error, stackTrace) {
@@ -146,7 +121,7 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
             Coordinates(position.latitude, position.longitude));
     myAddress = address.first.addressLine!;
     myLocation = address.first;
-    _marcadores.add(Marker(
+    marcadores.add(Marker(
         markerId: const MarkerId('Minha Localização'),
         position: LatLng(position.latitude, position.longitude),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
@@ -215,6 +190,7 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
       );
       if (result.points.isNotEmpty) {
         polylineCoordinates = [];
+        // ignore: unused_local_variable
         for (PointLatLng point in result.points) {
           _polylines.add(Polyline(
               polylineId: PolylineId(pointDestination.toString()),
@@ -232,202 +208,6 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
       setState(() {});
     } catch (e) {
       _erroSnackBar('Não foi possível traçar a rota');
-    }
-  }
-
-  _printPoly() {
-    developer.log('_polylines: $_polylines');
-
-    var rota = _polylines.first;
-
-    String rotaJson = jsonEncode(rota.toJson());
-    developer.log('rotaJson: $rotaJson');
-    var prefs = SharedPreferences.getInstance();
-    prefs.then((value) {
-      value.setString('rota', rotaJson);
-    });
-
-    var rotaPrefs = prefs.then((value) {
-      return value.getString('rota');
-    });
-
-    var rotaDecode = jsonDecode(rotaPrefs.toString());
-
-    var newPoly = Polyline(
-      polylineId: rotaDecode['polylineId'],
-      points: rotaDecode['points'],
-      width: rotaDecode['width'],
-      color: rotaDecode['color'],
-      geodesic: rotaDecode['geodesic'],
-      visible: rotaDecode['visible'],
-      startCap: rotaDecode['startCap'],
-      endCap: rotaDecode['endCap'],
-      jointType: rotaDecode['jointType'],
-      patterns: rotaDecode['patterns'],
-      consumeTapEvents: rotaDecode['consumeTapEvents'],
-      onTap: rotaDecode['onTap'],
-      zIndex: rotaDecode['zIndex'],
-    );
-
-    // print(newPoly);
-  }
-
-  _printMarker() {
-    // developer.log('_marcadores: ${_marcadores.length}');
-    var jsonMarkers = jsonEncode(_marcadores.map((e) => e.toJson()).toList());
-    developer.log('jsonMarkers: $jsonMarkers', name: 'UMMMMMMM');
-    var klklklasdas = jsonDecode(jsonMarkers);
-
-    Set<Marker> novosMarcadores = klklklasdas
-        .map((e) {
-          final markerId = e['markerId'] as String;
-          final position = e['position'] as List;
-          final infoWindow = e['infoWindow'] as Map;
-          final icon = e['icon'] as List;
-          final anchor = e['anchor'] as List;
-          final alpha = e['alpha'] as double;
-          final consumeTapEvents = e['consumeTapEvents'] as bool;
-          final draggable = e['draggable'] as bool;
-          final flat = e['flat'] as bool;
-          final rotation = e['rotation'] as double;
-
-          return Marker(
-            markerId: MarkerId(markerId),
-            position: LatLng(position[0], position[1]),
-            infoWindow: InfoWindow(
-              title: infoWindow['title'] as String,
-              anchor: Offset(anchor[0], anchor[1]),
-            ),
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueRose,
-            ),
-            anchor: Offset(anchor[0], anchor[1]),
-            alpha: alpha,
-            consumeTapEvents: consumeTapEvents,
-            draggable: draggable,
-            flat: flat,
-            rotation: rotation,
-            onTap: () {},
-          );
-        })
-        .cast<Marker>()
-        .toSet();
-    var jsonMarkersKKK =
-        jsonEncode(novosMarcadores.map((e) => e.toJson()).toList());
-    developer.log('jsonMarkersKKK: $jsonMarkersKKK',
-        name: 'DOOOOOOIIIIS', level: 2000);
-
-    setState(() {
-      _marcadores = novosMarcadores;
-    });
-  }
-
-  _modalBottomSheetMaps(LatLng latLng) {
-    return showModalBottomSheet(
-      backgroundColor: Colors.transparent,
-      context: context,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.3,
-        minChildSize: 0.3,
-        maxChildSize: 0.5,
-        builder: (context, scrollController) => Container(
-          decoration: BoxDecoration(
-            color: Palette.customGreyDark.withAlpha(245),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-          ),
-          height: 400,
-          child: Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  'Escolha o aplicativo de navegação',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Palette.persianasColor),
-                ),
-              ),
-              //button with icon from network
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-//wrap IconButton with Container rounded corners
-
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: Palette.persianasColor.withAlpha(30),
-                    ),
-                    child: IconButton(
-                      iconSize: 75,
-                      icon: Image.asset(
-                        'assets/waze.png',
-                        fit: BoxFit.cover,
-                      ),
-                      onPressed: () {
-                        _launchWazeFromLatLng(latLng);
-                      },
-                    ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: Palette.persianasColor.withAlpha(30),
-                    ),
-                    child: IconButton(
-                      iconSize: 75,
-                      onPressed: () {
-                        _launchMapsFromLatLng(latLng);
-                      },
-                      icon: Image.asset(
-                        'assets/google_maps.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _launchMapsFromLatLng(LatLng latLng) async {
-    var url =
-        'google.navigation:q=${latLng.latitude.toString()},${latLng.longitude.toString()}';
-    var fallbackUrl =
-        'https://www.google.com/maps/search/?api=1&query=${latLng.latitude.toString()},${latLng.longitude.toString()}';
-    try {
-      bool launched =
-          await launch(url, forceSafariVC: false, forceWebView: false);
-      if (!launched) {
-        await launch(fallbackUrl, forceSafariVC: false, forceWebView: false);
-      }
-    } catch (e) {
-      await launch(fallbackUrl, forceSafariVC: false, forceWebView: false);
-    }
-  }
-
-  void _launchWazeFromLatLng(LatLng latLng) async {
-    var url =
-        'waze://?ll=${latLng.latitude.toString()},${latLng.longitude.toString()}';
-    var fallbackUrl =
-        'https://waze.com/ul?ll=${latLng.latitude.toString()},${latLng.longitude.toString()}&navigate=yes';
-    try {
-      bool launched =
-          await launch(url, forceSafariVC: false, forceWebView: false);
-      if (!launched) {
-        await launch(fallbackUrl, forceSafariVC: false, forceWebView: false);
-      }
-    } catch (e) {
-      await launch(fallbackUrl, forceSafariVC: false, forceWebView: false);
     }
   }
 
@@ -478,17 +258,12 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
             .first)
         .toList();
 
-    String waypoints = enderecos
-        .map((e) =>
-            '${e.logradouro} ${e.numero}- ${e.complemento}, ${e.bairro}, ${e.cidade}, ${e.cep}, ${e.cidade}')
-        .join('|');
-
     for (EnderecoTemplate e in enderecos) {
       GeoData data = await _convertAddressToLatLng(
           address:
               '${e.logradouro} ${e.numero}- ${e.complemento}, ${e.bairro}, ${e.cidade}, ${e.cep}, ${e.cidade}');
       geoData.add(data);
-      _marcadores.add(Marker(
+      marcadores.add(Marker(
           markerId: MarkerId(
             '${e.logradouro} ${e.numero}- ${e.complemento ?? ''}, ${e.bairro}, ${e.cidade}, ${e.cep}, ${e.cidade}',
           ),
@@ -664,9 +439,7 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
           name: 'RomaneioDetails', error: e, stackTrace: s);
 
       // print(arguments);
-      final romaneio = widget.romaneio;
 
-      List<ClienteRomaneio> clientes = romaneio.data.clientesRomaneio;
       setState(() {
         _sorted = false;
       });
@@ -703,7 +476,7 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
   }
 
   bool _setMarkers(GeoData destination) {
-    return _marcadores.add(Marker(
+    return marcadores.add(Marker(
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
         markerId: MarkerId(destination.address),
         position: LatLng(destination.latitude, destination.longitude),
@@ -711,8 +484,6 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
   }
 
   late RomaneioGeneralController store;
-  final GlobalKey<SlideActionState> _slideActionKey = GlobalKey();
-  final GlobalKey<SlideActionState> _disableBackgroundKey = GlobalKey();
   Widget _romaneiosListWidget() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -860,10 +631,10 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
 
   Future<void> checkPermissionAndAddToBackground() async {
     bool hasPermissions =
-        await FlutterBackground.FlutterBackground.hasPermissions;
+        await flutter_background.FlutterBackground.hasPermissions;
     if (hasPermissions) {
-      bool success =
-          await FlutterBackground.FlutterBackground.enableBackgroundExecution();
+      bool success = await flutter_background.FlutterBackground
+          .enableBackgroundExecution();
       if (success) {
         _erroSnackBar('App em segundo plano');
       } else {
@@ -879,7 +650,7 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
     var endereco = cliente.enderecos
         .firstWhere((element) => element.tipo.label == 'Endereço Entrega');
 
-    bool _expanded = true;
+    bool expanded = true;
 
     return StatefulBuilder(builder: (context, setState) {
       var statusColor =
@@ -887,7 +658,7 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
 
       return Card(
         color: Palette.customGreyDark,
-        child: _expanded == true
+        child: expanded == true
             ? Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
@@ -896,8 +667,8 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
                 child: InkWell(
                   onTap: () {
                     setState(() {
-                      _expanded = !_expanded;
-                      print(_expanded);
+                      expanded = !expanded;
+                      print(expanded);
                     });
                   },
                   child: ListTile(
@@ -931,8 +702,8 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
                       ),
                       onPressed: () {
                         setState(() {
-                          _expanded = !_expanded;
-                          print(_expanded);
+                          expanded = !expanded;
+                          print(expanded);
                         });
                       },
                     ),
@@ -958,8 +729,8 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
                         child: InkWell(
                           onTap: () {
                             setState(() {
-                              _expanded = !_expanded;
-                              print(_expanded);
+                              expanded = !expanded;
+                              print(expanded);
                             });
                           },
                           child: Row(
@@ -978,14 +749,14 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
                                 ),
                               ),
                               IconButton(
-                                icon: Icon(
+                                icon: const Icon(
                                   Icons.arrow_drop_up,
                                   color: Colors.white,
                                 ),
                                 onPressed: () {
                                   setState(() {
-                                    _expanded = !_expanded;
-                                    print(_expanded);
+                                    expanded = !expanded;
+                                    print(expanded);
                                   });
                                 },
                               ),
@@ -1073,10 +844,11 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
                                   flex: 1,
                                   child: ListView.builder(
                                     shrinkWrap: true,
-                                    physics: NeverScrollableScrollPhysics(),
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
                                     itemBuilder: (context, index) {
                                       return Text(
-                                          '${cliente.pedidosDevenda[index].codigo}',
+                                          cliente.pedidosDevenda[index].codigo,
                                           textAlign: TextAlign.right,
                                           style: TextStyle(
                                               fontSize: 16,
@@ -1120,13 +892,13 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
                                               cliente.entregue = true;
                                             });
                                           }
-                                          await FlutterBackground
+                                          await flutter_background
                                                   .FlutterBackground
                                               .disableBackgroundExecution();
                                         }
                                       });
                                     },
-                                    child: Text(
+                                    child: const Text(
                                       'Navegar para o endereço',
                                       style: TextStyle(
                                           color: Colors.white,
@@ -1147,7 +919,7 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
   }
 
   void _clearAll() {
-    _marcadores.clear();
+    marcadores.clear();
     polylineCoordinates.clear();
     _polylines.clear();
     geoData.clear();
@@ -1162,27 +934,11 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
 
   var searchSuggestion = PlaceService(Dio());
 
-  Future _searchSuggestion(String? value) async {
-    var _searchResult;
-
-    if (value != null && value.isNotEmpty) {
-      var result = await searchSuggestion.getPlace(value);
-      if (result != null) {
-        setState(() {
-          _searchResult = result;
-        });
-        return _searchResult;
-      }
-
-      return null;
-    }
-  }
-
   init() async {
     await _backgroundApp();
   }
 
-  var _delegate = AddressSearch();
+  final _delegate = AddressSearch();
   @override
   Widget build(BuildContext context) {
     init();
@@ -1190,11 +946,11 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Romaneio ${romaneio.code}'),
-        actions: [
+        actions: const [
           // IconButton(
           //     onPressed: () async {
           //       // _getPositionHandler();
-          //       // developer.log(_marcadores.toString());
+          //       // developer.log(marcadores.toString());
           //       // _printPoly();
           //       _printMarker();
           //     },
@@ -1214,25 +970,23 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
                   children: [
                     myAddress == ''
                         ? Text(myAddress)
-                        : Container(
-                            child: GoogleMap(
-                              zoomControlsEnabled: false,
-                              myLocationEnabled: true,
-                              tiltGesturesEnabled: false,
-                              rotateGesturesEnabled: false,
-                              scrollGesturesEnabled: true,
-                              onMapCreated: (controller) {
-                                _mapController = controller;
-                                _mapController
-                                    .setMapStyle(jsonEncode(customTheme));
-                              },
-                              polylines: _polylines,
-                              markers: _marcadores,
-                              initialCameraPosition: CameraPosition(
-                                target: LatLng(myLocation.coordinates.latitude!,
-                                    myLocation.coordinates.longitude!),
-                                zoom: 15,
-                              ),
+                        : GoogleMap(
+                            zoomControlsEnabled: false,
+                            myLocationEnabled: true,
+                            tiltGesturesEnabled: false,
+                            rotateGesturesEnabled: false,
+                            scrollGesturesEnabled: true,
+                            onMapCreated: (controller) {
+                              _mapController = controller;
+                              _mapController
+                                  .setMapStyle(jsonEncode(customTheme));
+                            },
+                            polylines: _polylines,
+                            markers: marcadores,
+                            initialCameraPosition: CameraPosition(
+                              target: LatLng(myLocation.coordinates.latitude!,
+                                  myLocation.coordinates.longitude!),
+                              zoom: 15,
                             ),
                           ),
                     Positioned(
@@ -1316,10 +1070,8 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
             setState(() {
               timeAndDistance.clear();
             });
-            if (result != null) {
-              _clearAll();
-              _destinationAddress.text = result.description;
-            }
+            _clearAll();
+            _destinationAddress.text = result.description;
           },
           onEditingComplete: () {
             if (_scaleFactor == 0.65) {
@@ -1409,7 +1161,9 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
       _createPolylines();
       _changeScaleFactor();
     } catch (e, s) {
-      throw e;
+      _erroSnackBar(e.toString());
+      developer.log(e.toString(), stackTrace: s);
+      rethrow;
     }
   }
 }

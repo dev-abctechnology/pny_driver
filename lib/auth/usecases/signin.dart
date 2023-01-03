@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
@@ -5,9 +7,7 @@ import 'package:either_dart/either.dart';
 import 'package:pny_driver/errors/auth_exception.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../interceptors/token_interceptor.dart';
 import '../auth_repository.dart';
-import '../domain/entities/user.dart';
 
 class AuthUseCase {
   final Dio _api;
@@ -71,7 +71,7 @@ class AuthUseCase {
     username = username.substring(9);
 
     dio.options.headers = {
-      'Authorization': 'Bearer ${token}',
+      'Authorization': 'Bearer $token',
       'Content-Type': 'application/json',
     };
 
@@ -82,7 +82,7 @@ class AuthUseCase {
             "filters": [
               {
                 "fieldName": "username",
-                "value": '$username',
+                "value": username,
                 "expression": "CONTAINS"
               }
             ]
@@ -92,7 +92,6 @@ class AuthUseCase {
         var resposta = await response.data;
         print(resposta);
         var name = resposta[0]['name'];
-        var email = resposta[0]['email'];
         var profile = resposta[0]['profile'];
         print(profile);
         if (profile == 'Motorista') {

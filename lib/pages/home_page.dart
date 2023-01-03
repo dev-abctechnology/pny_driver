@@ -1,4 +1,4 @@
-import 'dart:convert';
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,7 +20,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String _date = '';
   void initialization() async {
     FlutterNativeSplash.remove();
   }
@@ -43,10 +42,8 @@ class _HomePageState extends State<HomePage> {
   String username = '';
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
-    _date = DateTime.now().toString();
     isLoggedIn();
     initializer();
     initialization();
@@ -59,38 +56,27 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-//create a disclouser dialog to show a popup to confirm if the user allow access to location services
-  void _showDialog() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Atenção'),
-            content: const Text(
-                'Você precisa permitir o acesso a localização para continuar'),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Cancelar')),
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _requestPermission();
-                  },
-                  child: const Text('Permitir')),
-            ],
-          );
-        });
-  }
-
-//request permission to access location services
   Future<void> _requestPermission() async {
     try {
       await Geolocator.requestPermission();
     } on PlatformException catch (e) {
       print(e);
+    }
+  }
+
+  bool _hasPermission = false;
+
+  Future<bool> _checkPermission() async {
+    try {
+      _hasPermission = await Geolocator.checkPermission() ==
+              LocationPermission.always ||
+          await Geolocator.checkPermission() == LocationPermission.whileInUse;
+      setState(() {});
+      print(_hasPermission);
+      return _hasPermission;
+    } on PlatformException catch (e) {
+      print(e);
+      return false;
     }
   }
 
@@ -106,7 +92,6 @@ class _HomePageState extends State<HomePage> {
         });
 
     var romaneio = await RomaneioDataSource().getRomaneioById(id);
-    String date = DateFormat('dd/MM/yyyy').format(DateTime.parse(_date));
     Navigator.of(context).pop();
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => RomaneioDetails(
@@ -124,6 +109,8 @@ class _HomePageState extends State<HomePage> {
       setState(() {});
       return true;
     } catch (e, s) {
+      print('error: $e');
+      print('stack: $s');
       return false;
     }
   }
@@ -144,8 +131,8 @@ class _HomePageState extends State<HomePage> {
         setState(() {});
       });
       if (romaneios.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Text('Nenhum romaneio encontrado'),
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Nenhum romaneio encontrado'),
         ));
       }
     } catch (e, s) {
@@ -170,7 +157,7 @@ class _HomePageState extends State<HomePage> {
         onRefresh: () async {
           await initialSearch();
         },
-        child: romaneios.length == 0
+        child: romaneios.isEmpty
             ? ListView(
                 children: [
                   Column(
@@ -183,7 +170,7 @@ class _HomePageState extends State<HomePage> {
                           frameBuilder: (context, child, composition) {
                             //RETURN A SHIMMER EFFECT IF THE ANIMATION IS NOT LOADED
                             if (composition == null) {
-                              return CircularProgressIndicator();
+                              return const CircularProgressIndicator();
                             }
                             return Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -199,7 +186,7 @@ class _HomePageState extends State<HomePage> {
                             ? 'Carregando...'
                             : 'Nenhum romaneio encontrado, tente novamente mais tarde',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -212,30 +199,32 @@ class _HomePageState extends State<HomePage> {
                   ListView.builder(
                       shrinkWrap: true,
                       itemCount: romaneios.length,
-                      physics: BouncingScrollPhysics(
+                      physics: const BouncingScrollPhysics(
                           parent: AlwaysScrollableScrollPhysics()),
                       padding: const EdgeInsets.all(8),
                       itemBuilder: (BuildContext context, int index) {
-                        String date = DateFormat('dd/MM/yyyy')
-                            .format(DateTime.parse(_date));
                         return Card(
                           child: InkWell(
-                            onTap: () {
-                              _romaneioSelectedHandler(romaneios[index].id);
+                            onTap: () async {
+                              var permission = await _checkPermission();
+                              if (permission == true) {
+                                _romaneioSelectedHandler(romaneios[index].id);
+                              } else {
+                                showLocationPermissionDialog();
+                              }
                             },
                             child: Column(
                               children: [
-                                // card with romaneio info
                                 ListTile(
                                   title: Text(
-                                    'Romaneio: ' + romaneios[index].code,
-                                    style: TextStyle(
+                                    'Romaneio: ${romaneios[index].code}',
+                                    style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 20),
                                   ),
                                   subtitle: Text(
                                       'Data: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(romaneios[index].deliveryDate))}',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w700,
                                       )),
@@ -251,9 +240,8 @@ class _HomePageState extends State<HomePage> {
                         child: Lottie.asset(
                           'assets/romaneio.json',
                           frameBuilder: (context, child, composition) {
-                            //RETURN A SHIMMER EFFECT IF THE ANIMATION IS NOT LOADED
                             if (composition == null) {
-                              return CircularProgressIndicator();
+                              return const CircularProgressIndicator();
                             }
                             return Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -267,7 +255,7 @@ class _HomePageState extends State<HomePage> {
                             ? 'Carregando...'
                             : 'Toque em um romaneio para ver mais detalhes',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -292,8 +280,6 @@ class _HomePageState extends State<HomePage> {
         ],
         currentIndex: 0,
         onTap: (int index) {
-          // show a dialog asking if the user wants to logout
-
           if (index == 2) {
             showDialog(
                 context: context,
@@ -311,7 +297,6 @@ class _HomePageState extends State<HomePage> {
                           onPressed: () async {
                             var prefs = await SharedPreferences.getInstance();
                             prefs.clear();
-                            // exit the app
                             SystemNavigator.pop();
                           },
                           child: const Text('Sim')),
@@ -322,6 +307,44 @@ class _HomePageState extends State<HomePage> {
         },
       ),
     );
+  }
+
+  showLocationPermissionDialog() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Permissão de localização'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Text('Deseja permitir o acesso a localização?'),
+                Text('Não será possível continuar sem a permissão.'),
+                Text('Para permitir, vá em configurações do aplicativo.'),
+                Text('Clique em permissões e ative a localização.'),
+                Text('Para mais informações, entre em contato com o suporte.'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Não')),
+              TextButton(
+                  onPressed: () async {
+                    await _requestPermission().then((value) {
+                      _checkPermission().then((value) {
+                        if (value == true) {
+                          Navigator.of(context).pop();
+                        }
+                      });
+                    });
+                  },
+                  child: const Text('Sim')),
+            ],
+          );
+        });
   }
 }
 
