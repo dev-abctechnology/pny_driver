@@ -220,12 +220,13 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
         'https://waze.com/ul?ll=${infoAddress.latitude.toString()},${infoAddress.longitude.toString()}&navigate=yes';
     try {
       bool launched =
-          await launch(url, forceSafariVC: false, forceWebView: false);
+          await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
       if (!launched) {
-        await launch(fallbackUrl, forceSafariVC: false, forceWebView: false);
+        await launchUrl(Uri.parse(fallbackUrl),
+            mode: LaunchMode.platformDefault);
       }
     } catch (e) {
-      await launch(fallbackUrl, forceSafariVC: false, forceWebView: false);
+      await launchUrl(Uri.parse(fallbackUrl), mode: LaunchMode.platformDefault);
     }
   }
 
@@ -238,12 +239,13 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
         'https://www.google.com/maps/search/?api=1&query=${infoAddress.latitude.toString()},${infoAddress.longitude.toString()}';
     try {
       bool launched =
-          await launch(url, forceSafariVC: false, forceWebView: false);
+          await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
       if (!launched) {
-        await launch(fallbackUrl, forceSafariVC: false, forceWebView: false);
+        await launchUrl(Uri.parse(fallbackUrl),
+            mode: LaunchMode.platformDefault);
       }
     } catch (e) {
-      await launch(fallbackUrl, forceSafariVC: false, forceWebView: false);
+      await launchUrl(Uri.parse(fallbackUrl), mode: LaunchMode.platformDefault);
     }
   }
 
