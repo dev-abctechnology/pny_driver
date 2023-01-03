@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
@@ -55,6 +56,41 @@ class _HomePageState extends State<HomePage> {
     var init = await initializeSharedPreferences();
     if (init) {
       initialSearch();
+    }
+  }
+
+//create a disclouser dialog to show a popup to confirm if the user allow access to location services
+  void _showDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Atenção'),
+            content: const Text(
+                'Você precisa permitir o acesso a localização para continuar'),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancelar')),
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _requestPermission();
+                  },
+                  child: const Text('Permitir')),
+            ],
+          );
+        });
+  }
+
+//request permission to access location services
+  Future<void> _requestPermission() async {
+    try {
+      await Geolocator.requestPermission();
+    } on PlatformException catch (e) {
+      print(e);
     }
   }
 

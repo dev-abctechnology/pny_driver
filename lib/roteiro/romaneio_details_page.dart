@@ -78,6 +78,7 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
     // romaneio = romaneioDelivery;
     timeAndDistance = {};
     _setLocationToAddres();
+
     store = RomaneioGeneralController();
   }
 
@@ -603,8 +604,8 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
       final romaneio = widget.romaneio;
 
       List<ClienteRomaneio> clientes = romaneio.data.clientesRomaneio;
-      clientes
-          .remove(clientes.firstWhere((element) => element.entregue == true));
+      // clientes
+      //     .remove(clientes.firstWhere((element) => element.entregue == true));
       List<EnderecoTemplate> enderecos =
           _identifyDeliveryAddress(clientes).toList();
 
