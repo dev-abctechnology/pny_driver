@@ -104,10 +104,15 @@ class _HomePageState extends State<HomePage> {
 
   Future<bool> initializeSharedPreferences() async {
     try {
-      nome = await SharedPreferences.getInstance()
-          .then((value) => value.getString('name')!);
-      setState(() {});
-      return true;
+      var prefs = await SharedPreferences.getInstance();
+
+      if (prefs.getString('name') == null) {
+        return false;
+      } else {
+        username = prefs.getString('name')!;
+        print(username);
+        return true;
+      }
     } catch (e, s) {
       print('error: $e');
       print('stack: $s');
