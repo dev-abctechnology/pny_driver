@@ -167,66 +167,63 @@ class _HomePageState extends State<HomePage> {
       },
       children: [
         todayPage(),
-        HistoryPage(),
+        const HistoryPage(),
         logoutPage(),
       ],
     );
   }
 
   Widget logoutPage() {
-    return Container(
-      child: Column(
-        children: [
-          const SizedBox(
-            height: 20,
-          ),
-          Lottie.asset('assets/exit.json', repeat: false),
-          const SizedBox(
-            height: 20,
-          ),
-          TextButton(
-            onPressed: () async {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text('Desconectar'),
-                    content: Text('Deseja realmente desconectar?'),
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
+    return Column(
+      children: [
+        const SizedBox(
+          height: 20,
+        ),
+        Lottie.asset('assets/exit.json', repeat: false),
+        const SizedBox(
+          height: 20,
+        ),
+        TextButton(
+          onPressed: () async {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: const Text('Desconectar'),
+                  content: const Text('Deseja realmente desconectar?'),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
 
-                            pageController.animateToPage(0,
-                                duration: const Duration(milliseconds: 500),
-                                curve: Curves.ease);
-                            setState(() {
-                              indexPage = 0;
-                            });
-                          },
-                          child: Text('Não')),
-                      TextButton(
-                          onPressed: () async {
-                            var prefs = await SharedPreferences.getInstance();
-                            prefs.clear();
-                            Navigator.of(context).pop();
-                            Navigator.of(context)
-                                .pushReplacementNamed('/signin');
-                          },
-                          child: Text('Sim')),
-                    ],
-                  );
-                },
-              );
-            },
-            child: const Text('Desconectar'),
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(Colors.red),
-              foregroundColor: MaterialStateProperty.all(Colors.white),
-            ),
+                          pageController.animateToPage(0,
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.ease);
+                          setState(() {
+                            indexPage = 0;
+                          });
+                        },
+                        child: const Text('Não')),
+                    TextButton(
+                        onPressed: () async {
+                          var prefs = await SharedPreferences.getInstance();
+                          prefs.clear();
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pushReplacementNamed('/signin');
+                        },
+                        child: const Text('Sim')),
+                  ],
+                );
+              },
+            );
+          },
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(Colors.red),
+            foregroundColor: MaterialStateProperty.all(Colors.white),
           ),
-        ],
-      ),
+          child: const Text('Desconectar'),
+        ),
+      ],
     );
   }
 

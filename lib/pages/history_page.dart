@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pny_driver/domain/datasource/historico.dart';
-import 'package:pny_driver/domain/datasource/romaneio_datasource.dart';
-
-import '../domain/models/romaneio_lite_model.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({
@@ -52,7 +49,6 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      child: Container(color: Colors.red),
       animation: historicoRepository,
       builder: (context, child) {
         return Stack(
@@ -69,7 +65,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 String year = date.substring(0, 4);
                 String month = date.substring(5, 7);
                 String day = date.substring(8, 10);
-                String dateFormated = day + "/" + month + "/" + year;
+                String dateFormated = "$day/$month/$year";
 
                 return ListTile(
                   title: Text(romaneio.code),
@@ -82,6 +78,7 @@ class _HistoryPageState extends State<HistoryPage> {
           ],
         );
       },
+      child: Container(color: Colors.red),
     );
   }
 

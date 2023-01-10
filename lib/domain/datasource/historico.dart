@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pny_driver/shared/enviroment.dart';
@@ -8,9 +10,9 @@ import '../models/romaneio_lite_model.dart';
 
 class HistoricoRepository with ChangeNotifier {
   int _index = 0;
-  List<RomaneioLite> _historico = [];
+  List<RomaneioLite> romaneios = [];
 
-  List<RomaneioLite> get historico => _historico;
+  List<RomaneioLite> get historico => romaneios;
 
   getRomaneiosHistorico() async {
     final prefs = await SharedPreferences.getInstance();
@@ -53,7 +55,7 @@ class HistoricoRepository with ChangeNotifier {
 
     romaneiosList.removeWhere((element) => element.deliveryDate.contains(date));
 
-    _historico.addAll(romaneiosList);
+    romaneios.addAll(romaneiosList);
     _index++;
     notifyListeners();
   }
