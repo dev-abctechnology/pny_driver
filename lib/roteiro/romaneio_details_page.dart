@@ -13,7 +13,6 @@ import 'package:pny_driver/config/google_maps_theme.dart';
 import 'package:pny_driver/domain/models/direction_suggestion.dart';
 import 'package:pny_driver/pages/widgets/search_bar.dart';
 import 'package:pny_driver/pages/widgets/search_bar_widget.dart';
-import 'package:pny_driver/roteiro/store/roteiro_store.dart';
 import 'dart:developer' as developer;
 import '../domain/models/romaneio_model.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -75,13 +74,34 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
   @override
   void initState() {
     super.initState();
+    initializer();
+  }
 
+  initializer() {
     romaneio = widget.romaneio;
+
+    var listaClientes = romaneio.data.clientesRomaneio;
+
+    print(listaClientes.length);
+    //remove from listaClientes all elements that codigo repeat
+
+    for (var i = 0; i < listaClientes.length; i++) {
+      for (var j = i + 1; j < listaClientes.length; j++) {
+        if (listaClientes[i].codigo == listaClientes[j].codigo) {
+          listaClientes.removeAt(j);
+          print('removido');
+        }
+      }
+    }
+
+    romaneio.data.clientesRomaneio = listaClientes;
+    print(listaClientes.length);
+    print(
+        'romaneio.data.clientesRomaneio.length: ${romaneio.data.clientesRomaneio.length}');
+
     // romaneio = romaneioDelivery;
     timeAndDistance = {};
     _setLocationToAddres();
-
-    store = RomaneioGeneralController();
   }
 
   Future<Position> _getGeoLocationPosition() async {
@@ -485,7 +505,6 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
         infoWindow: InfoWindow(title: destination.address)));
   }
 
-  late RomaneioGeneralController store;
   Widget _romaneiosListWidget() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 10),

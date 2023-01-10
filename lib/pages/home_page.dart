@@ -322,21 +322,89 @@ class _HomePageState extends State<HomePage> {
             title: const Text('Permissão de localização'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
-              children: const [
-                Text('Deseja permitir o acesso a localização?'),
-                Text('Não será possível continuar sem a permissão.'),
-                Text('Para permitir, vá em configurações do aplicativo.'),
-                Text('Clique em permissões e ative a localização.'),
-                Text('Para mais informações, entre em contato com o suporte.'),
+              children: [
+                const Text(
+                  '"Persianas New York: Entregas" usa sua localização para:',
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  children: const [
+                    Icon(
+                      Icons.circle,
+                      color: Colors.grey,
+                      size: 10,
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Expanded(
+                      child: Text(
+                        'Determinar sua localização atual para que você possa ver a rota até os clientes.',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  children: const [
+                    Icon(
+                      Icons.warning_amber_outlined,
+                      color: Colors.orange,
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Expanded(
+                      child: Text(
+                        'Sua localização só estará em uso quando o aplicativo estiver aberto ou quando você estiver em trânsito e colocar o apliativo em segundo plano.',
+                        style: TextStyle(color: Colors.orange),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  children: const [
+                    Icon(
+                      Icons.close_rounded,
+                      color: Colors.green,
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Expanded(
+                      child: Text(
+                        'Quando você fechar o aplicativo, fique tranquilo, sua localização não será utilizada.',
+                        style: TextStyle(color: Colors.green),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
+            actionsAlignment: MainAxisAlignment.spaceBetween,
             actions: [
-              TextButton(
+              TextButton.icon(
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Não')),
-              TextButton(
+                  icon: const Icon(
+                    Icons.do_disturb,
+                    color: Colors.red,
+                  ),
+                  label: const Text(
+                    'Não permitir',
+                    style: TextStyle(color: Colors.red),
+                  )),
+              //textButton with Icon and Text
+              TextButton.icon(
                   onPressed: () async {
                     await _requestPermission().then((value) {
                       _checkPermission().then((value) {
@@ -346,7 +414,14 @@ class _HomePageState extends State<HomePage> {
                       });
                     });
                   },
-                  child: const Text('Sim')),
+                  icon: const Icon(
+                    Icons.location_on,
+                    color: Colors.green,
+                  ),
+                  label: const Text(
+                    'Permitir',
+                    style: TextStyle(color: Colors.green),
+                  ))
             ],
           );
         });

@@ -386,7 +386,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
     );
   }
 
-  void sendToJarvisNaoEntregue() {
+  Future<void> sendToJarvisNaoEntregue() async {
     if (_formKeyNaoEntregue.currentState!.validate()) {
       //show loading dialog
       showDialog(
@@ -416,7 +416,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
           ));
         }
 
-        jarvisController
+        await jarvisController
             .updateRomaneio(RomaneioEntregue(
           codigoCliente: cliente.codigo,
           imagemBase64: fotoBase64,
@@ -430,12 +430,21 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
           pedidos: pedidos,
         ))
             .then((value) async {
-          developer.log('value: $value', name: 'resposta do jarvis');
+//verify if the romaneio was updated by either
 
-          //close loading dialog
-          Navigator.pop(context);
+          value.fold((error) {
+            print(error);
+            //show snack bar with error
+            throw error;
+          }, (response) {
+            developer.log('value: $response',
+                name: 'resposta do jarvis', error: response);
 
-          Navigator.pop(context, true);
+            //close loading dialog
+            Navigator.pop(context);
+
+            Navigator.pop(context, true);
+          });
         });
       } catch (e) {
         developer.log('error: $e', name: 'error');
@@ -444,8 +453,9 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
         //close loading dialog
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao enviar para o jarvis'),
+          SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Erro: $e'),
           ),
         );
       }

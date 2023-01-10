@@ -44,7 +44,7 @@ class RomaneioData {
   late final String? seloSeguranca;
   late final String? observacoesGerais;
   late final String? dataCriacao;
-  late final List<ClienteRomaneio> clientesRomaneio;
+  late List<ClienteRomaneio> clientesRomaneio;
   late final String? ultimaIntegracaoRecebidoGHS;
   late final String? ultimaIntegracaoEnvioGHS;
   late final String? observacoesCabecalho;

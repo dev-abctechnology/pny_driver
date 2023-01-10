@@ -95,6 +95,7 @@ class _SignInState extends State<SignIn> {
                     child: Column(
                       children: [
                         TextFormField(
+                          key: const Key('username'),
                           controller: _emailController,
                           decoration: const InputDecoration(
                             labelText: 'Usuário',
@@ -112,6 +113,7 @@ class _SignInState extends State<SignIn> {
                           height: 20,
                         ),
                         TextFormField(
+                          key: const Key('password'),
                           obscureText: _obscurePassword,
                           controller: _passwordController,
                           decoration: InputDecoration(
