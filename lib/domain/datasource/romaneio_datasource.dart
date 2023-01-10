@@ -7,6 +7,7 @@ import 'dart:developer' as developer;
 import 'package:pny_driver/domain/models/romaneio_lite_model.dart';
 import 'package:pny_driver/domain/models/romaneio_model.dart';
 import 'package:pny_driver/interceptors/token_interceptor.dart';
+import 'package:pny_driver/shared/enviroment.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RomaneioDataSource {
@@ -28,19 +29,17 @@ class RomaneioDataSource {
     var date = '${DateTime.now().toString().substring(0, 10)}T03';
 
     print(date);
-    final response = await _dio.post(
-        'http://qas-abctech.ddns.net:8080/jarvis/api/stuff/data/filter',
-        data: {
-          "filters": [
-            {
-              "fieldName": "data.slt_00005.label",
-              "value": "$user",
-              "expression": "CONTAINS"
-            }
-          ],
-          "sort": {"fieldName": "data.slt_00006", "type": "DESC"},
-          "paginator": {"page": 0, "size": 10}
-        }).onError((error, stackTrace) {
+    final response = await _dio.post(jarvisUrl, data: {
+      "filters": [
+        {
+          "fieldName": "data.slt_00005.label",
+          "value": "$user",
+          "expression": "CONTAINS"
+        }
+      ],
+      "sort": {"fieldName": "data.slt_00006", "type": "DESC"},
+      "paginator": {"page": 0, "size": 10}
+    }).onError((error, stackTrace) {
       print(error);
 
       throw Exception('Erro ao buscar romaneios');

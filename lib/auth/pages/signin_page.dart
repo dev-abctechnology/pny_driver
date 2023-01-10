@@ -42,7 +42,7 @@ class _SignInState extends State<SignIn> {
   }
 
   navigateHome(context) {
-    return Navigator.of(context).pushNamed('/');
+    Navigator.pushReplacementNamed(context, '/');
   }
 
   bool _obscurePassword = true;

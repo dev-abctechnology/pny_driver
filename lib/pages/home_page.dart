@@ -12,6 +12,8 @@ import 'package:pny_driver/domain/models/romaneio_lite_model.dart';
 import 'package:pny_driver/roteiro/romaneio_details_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'history_page.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -152,165 +154,236 @@ class _HomePageState extends State<HomePage> {
 
   List<RomaneioLite> romaneios = [];
 
+  PageController pageController = PageController(initialPage: 0);
+  int indexPage = 0;
+
+  Widget pageViewWidget() {
+    return PageView(
+      controller: pageController,
+      onPageChanged: (index) {
+        setState(() {
+          indexPage = index;
+        });
+      },
+      children: [
+        todayPage(),
+        HistoryPage(),
+        logoutPage(),
+      ],
+    );
+  }
+
+  Widget logoutPage() {
+    return Container(
+      child: Column(
+        children: [
+          const SizedBox(
+            height: 20,
+          ),
+          Lottie.asset('assets/exit.json', repeat: false),
+          const SizedBox(
+            height: 20,
+          ),
+          TextButton(
+            onPressed: () async {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text('Desconectar'),
+                    content: Text('Deseja realmente desconectar?'),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+
+                            pageController.animateToPage(0,
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.ease);
+                            setState(() {
+                              indexPage = 0;
+                            });
+                          },
+                          child: Text('Não')),
+                      TextButton(
+                          onPressed: () async {
+                            var prefs = await SharedPreferences.getInstance();
+                            prefs.clear();
+                            Navigator.of(context).pop();
+                            Navigator.of(context)
+                                .pushReplacementNamed('/signin');
+                          },
+                          child: Text('Sim')),
+                    ],
+                  );
+                },
+              );
+            },
+            child: const Text('Desconectar'),
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(Colors.red),
+              foregroundColor: MaterialStateProperty.all(Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(' $username'),
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await initialSearch();
-        },
-        child: romaneios.isEmpty
-            ? ListView(
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        alignment: Alignment.center,
-                        child: Lottie.asset(
-                          'assets/empty_box.json',
-                          frameBuilder: (context, child, composition) {
-                            //RETURN A SHIMMER EFFECT IF THE ANIMATION IS NOT LOADED
-                            if (composition == null) {
-                              return const CircularProgressIndicator();
-                            }
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: child,
-                            );
-                          },
-                          repeat: true,
-                          frameRate: FrameRate(60),
-                        ),
-                      ),
-                      Text(
+      body: pageViewWidget(),
+      bottomNavigationBar: bottomNav(),
+    );
+  }
+
+  BottomNavigationBar bottomNav() {
+    return BottomNavigationBar(
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.today),
+          label: 'Hoje',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.history),
+          label: 'Histórico',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.logout),
+          label: 'Sair',
+        ),
+      ],
+      currentIndex: indexPage,
+      onTap: (int index) {
+        setState(() {
+          indexPage = index;
+          pageController.animateToPage(index,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut);
+        });
+      },
+    );
+  }
+
+  Widget todayPage() {
+    return RefreshIndicator(
+      onRefresh: () async {
+        await initialSearch();
+      },
+      child: romaneios.isEmpty
+          ? ListView(
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(top: 100),
+                      alignment: Alignment.center,
+                      child: Lottie.asset(
                         isLoading == true
-                            ? 'Carregando...'
-                            : 'Nenhum romaneio encontrado, tente novamente mais tarde',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                            ? 'assets/searching.json'
+                            : 'assets/empty_box.json',
+                        frameBuilder: (context, child, composition) {
+                          //RETURN A SHIMMER EFFECT IF THE ANIMATION IS NOT LOADED
+                          if (composition == null) {
+                            return const CircularProgressIndicator();
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: child,
+                          );
+                        },
+                        repeat: true,
+                        frameRate: FrameRate(60),
                       ),
-                    ],
-                  ),
-                ],
-              )
-            : ListView(
-                shrinkWrap: true,
-                children: [
-                  ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: romaneios.length,
-                      physics: const BouncingScrollPhysics(
-                          parent: AlwaysScrollableScrollPhysics()),
-                      padding: const EdgeInsets.all(8),
-                      itemBuilder: (BuildContext context, int index) {
-                        return Card(
-                          child: InkWell(
-                            onTap: () async {
-                              var permission = await _checkPermission();
-                              if (permission == true) {
-                                _romaneioSelectedHandler(romaneios[index].id);
-                              } else {
-                                showLocationPermissionDialog();
-                              }
-                            },
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  title: Text(
-                                    'Romaneio: ${romaneios[index].code}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20),
-                                  ),
-                                  subtitle: Text(
-                                      'Data: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(romaneios[index].deliveryDate))}',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                      )),
+                    ),
+                    Text(
+                      isLoading == true
+                          ? 'Carregando...'
+                          : 'Nenhum romaneio encontrado, tente novamente mais tarde',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ],
+            )
+          : ListView(
+              shrinkWrap: true,
+              children: [
+                ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: romaneios.length,
+                    physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics()),
+                    padding: const EdgeInsets.all(8),
+                    itemBuilder: (BuildContext context, int index) {
+                      return Card(
+                        child: InkWell(
+                          onTap: () async {
+                            var permission = await _checkPermission();
+                            if (permission == true) {
+                              _romaneioSelectedHandler(romaneios[index].id);
+                            } else {
+                              showLocationPermissionDialog();
+                            }
+                          },
+                          child: Column(
+                            children: [
+                              ListTile(
+                                title: Text(
+                                  'Romaneio: ${romaneios[index].code}',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20),
                                 ),
-                              ],
-                            ),
+                                subtitle: Text(
+                                    'Data: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(romaneios[index].deliveryDate))}',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    )),
+                              ),
+                            ],
                           ),
-                        );
-                      }),
-                  Column(
-                    children: [
-                      Container(
-                        child: Lottie.asset(
-                          'assets/romaneio.json',
-                          frameBuilder: (context, child, composition) {
-                            if (composition == null) {
-                              return const CircularProgressIndicator();
-                            }
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: child,
-                            );
-                          },
                         ),
-                      ),
-                      Text(
+                      );
+                    }),
+                Column(
+                  children: [
+                    Container(
+                      child: Lottie.asset(
                         isLoading == true
-                            ? 'Carregando...'
-                            : 'Toque em um romaneio para ver mais detalhes',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                            ? 'assets/searching.json'
+                            : 'assets/romaneio.json',
+                        frameBuilder: (context, child, composition) {
+                          if (composition == null) {
+                            return const CircularProgressIndicator();
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: child,
+                          );
+                        },
                       ),
-                    ],
-                  )
-                ],
-              ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.today),
-            label: 'Hoje',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'Histórico',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.logout),
-            label: 'Sair',
-          ),
-        ],
-        currentIndex: 0,
-        onTap: (int index) {
-          if (index == 2) {
-            showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Sair'),
-                    content: const Text('Deseja sair?'),
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Não')),
-                      TextButton(
-                          onPressed: () async {
-                            var prefs = await SharedPreferences.getInstance();
-                            prefs.clear();
-                            SystemNavigator.pop();
-                          },
-                          child: const Text('Sim')),
-                    ],
-                  );
-                });
-          }
-        },
-      ),
+                    ),
+                    Text(
+                      isLoading == true
+                          ? 'Carregando...'
+                          : 'Toque em um romaneio para ver mais detalhes',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                )
+              ],
+            ),
     );
   }
 
@@ -425,32 +498,5 @@ class _HomePageState extends State<HomePage> {
             ],
           );
         });
-  }
-}
-
-class Shimmer {
-  const Shimmer._();
-
-  static Widget fromColors({
-    required Color baseColor,
-    required Color highlightColor,
-    Widget? child,
-    double? period,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            baseColor,
-            highlightColor,
-            baseColor,
-          ],
-          stops: const [0.0, 0.5, 1.0],
-        ),
-      ),
-      child: child,
-    );
   }
 }
