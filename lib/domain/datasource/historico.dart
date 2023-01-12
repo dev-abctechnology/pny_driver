@@ -10,9 +10,10 @@ import '../models/romaneio_lite_model.dart';
 
 class HistoricoRepository with ChangeNotifier {
   int _index = 0;
-  List<RomaneioLite> romaneios = [];
+  // ignore: prefer_final_fields
+  var _historico = <RomaneioLite>[];
 
-  List<RomaneioLite> get historico => romaneios;
+  List<RomaneioLite> get historico => _historico;
 
   getRomaneiosHistorico() async {
     final prefs = await SharedPreferences.getInstance();
@@ -42,20 +43,20 @@ class HistoricoRepository with ChangeNotifier {
 
     final response =
         await dio.post(jarvisUrl, data: payload).onError((error, stackTrace) {
-      throw Exception('Erro ao buscar romaneios');
+      throw Exception('Erro ao buscar o historico');
     });
-    final romaneios = response.data['content'] as List;
+    final content = response.data['content'] as List;
 
-    var romaneiosList =
-        romaneios.map((romaneio) => RomaneioLite.fromJson(romaneio)).toList();
+    var resposta =
+        content.map((romaneio) => RomaneioLite.fromJson(romaneio)).toList();
 
     var date = '${DateTime.now().toString().substring(0, 10)}T03';
     print(date);
-    print(romaneiosList[0].deliveryDate);
+    print(resposta[0].deliveryDate);
 
-    romaneiosList.removeWhere((element) => element.deliveryDate.contains(date));
+    resposta.removeWhere((element) => element.deliveryDate.contains(date));
 
-    romaneios.addAll(romaneiosList);
+    _historico.addAll(resposta);
     _index++;
     notifyListeners();
   }

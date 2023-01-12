@@ -25,12 +25,23 @@ class RomaneioJarvisController {
 
     developer.log(entrega.toJson().toString());
     try {
-      final response = await api.post(
+      final response = await api
+          .post(
         'http://qas-abctech.ddns.net:8080/jarvis/api/customized/security/PNY-RPVUPD01',
         data: entrega.toJson().toString(),
-      );
+      )
+          .onError((error, stackTrace) {
+        developer.log(error.toString());
+        developer.log(stackTrace.toString());
+
+        throw Exception('Erro ao atualizar o romaneio');
+      });
+
+      developer.log(response.statusCode.toString());
+      developer.log(response.data.toString());
       if (response.statusCode == 200) {
         developer.log(response.data.toString());
+
         return Right(response.data.toString());
       } else {
         developer.log(response.data.toString());
