@@ -1,7 +1,7 @@
 name: pny_driver
 description: A new Flutter project.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.1.0+6
+version: 1.1.1+7
 environment:
   sdk: '>=2.18.2 <3.0.0'
 dependencies:
@@ -30,6 +30,7 @@ dependencies:
   brasil_fields: ^1.8.0
   flutter_native_splash: ^2.2.16
   animated_splash_screen: ^1.3.0
+  date_format: ^2.0.7
 
 dev_dependencies:
   flutter_test:

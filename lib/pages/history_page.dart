@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pny_driver/domain/datasource/historico.dart';
+import 'package:pny_driver/pages/history_details_page.dart';
+
+import '../domain/datasource/romaneio_datasource.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({
@@ -46,6 +49,8 @@ class _HistoryPageState extends State<HistoryPage> {
     loading.value = false;
   }
 
+  final romaneioDataSource = RomaneioDataSource();
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -67,10 +72,24 @@ class _HistoryPageState extends State<HistoryPage> {
                 String day = date.substring(8, 10);
                 String dateFormated = "$day/$month/$year";
 
-                return ListTile(
-                  title: Text(romaneio.code),
-                  subtitle: Text(// romaneio.deliveryDate convert to date
-                      dateFormated),
+                return InkWell(
+                  onTap: () async {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HistoryDetails(
+                          romaneioId: romaneio.id,
+                        ),
+                      ),
+                    );
+                    // ignore: avoid_print
+                    print('Romaneio: ${romaneio.code}');
+                  },
+                  child: ListTile(
+                    title: Text(romaneio.code),
+                    subtitle: Text(// romaneio.deliveryDate convert to date
+                        dateFormated),
+                  ),
                 );
               },
             ),

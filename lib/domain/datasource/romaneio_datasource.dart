@@ -70,7 +70,7 @@ class RomaneioDataSource {
 
     final response = await _dio
         .get(
-      'http://qas-abctech.ddns.net:8080/jarvis/api/stuff/data/$id',
+      '$baseUrl/api/stuff/data/$id',
     )
         .then((value) {
       return value;

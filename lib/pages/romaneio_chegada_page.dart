@@ -37,14 +37,16 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
   Object? _assinatura;
   bool _statusInformado = false;
   late RomaneioJarvisController jarvisController;
-
+  bool _isCollapsed = true;
   _askDeliveredWidget() {
     ClienteRomaneio cliente = args['cliente'];
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeIn,
           padding: const EdgeInsets.all(20),
           margin: const EdgeInsets.all(20),
           decoration: BoxDecoration(
@@ -59,49 +61,118 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
               ),
             ],
           ),
-          child: Column(
-            children: [
-              const SizedBox(
-                height: 20,
-              ),
-              ListTile(
-                title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      cliente.nome,
-                    )),
-                subtitle:
-                    Text(cliente.cnpj, style: const TextStyle(fontSize: 20)),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  const Flexible(
-                    child: Text(
-                      'Pedidos: ',
-                      style: TextStyle(fontSize: 20),
-                    ),
+          child: AnimatedCrossFade(
+            duration: const Duration(milliseconds: 300),
+            crossFadeState: _isCollapsed
+                ? CrossFadeState.showFirst
+                : CrossFadeState.showSecond,
+            firstChild: Column(
+              children: [
+                const SizedBox(
+                  height: 20,
+                ),
+                ListTile(
+                  title: Text(
+                    cliente.nome,
+                    style: const TextStyle(fontSize: 20),
                   ),
-                  Flexible(
-                    child: ListView.builder(
+                  subtitle:
+                      Text(cliente.cnpj, style: const TextStyle(fontSize: 18)),
+                ),
+                ListTile(
+                  title: Text(cliente.telefoneEntrega,
+                      style: const TextStyle(fontSize: 18)),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _isCollapsed = !_isCollapsed;
+                    });
+                  },
+                  child: const Text('Ver pedidos'),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+              ],
+            ),
+            secondChild: Column(
+              children: [
+                const SizedBox(
+                  height: 20,
+                ),
+                ListTile(
+                  title: Text(
+                    cliente.nome,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  subtitle:
+                      Text(cliente.cnpj, style: const TextStyle(fontSize: 18)),
+                ),
+                ListTile(
+                  title: Text(cliente.telefoneEntrega,
+                      style: const TextStyle(fontSize: 18)),
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    ListView.separated(
+                      separatorBuilder: (context, index) => const Divider(),
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       itemCount: cliente.pedidosDevenda.length,
-                      itemBuilder: (context, index) => ListTile(
-                        title: Text(
-                          cliente.pedidosDevenda[index].codigo,
-                          style: const TextStyle(fontSize: 20),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
+                      itemBuilder: (context, index) {
+                        final pedido = cliente.pedidosDevenda[index];
+
+                        return ListTile(
+                          title: Text(
+                            'pedido: ${pedido.codigo}',
+                          ),
+                          subtitle: ListView.separated(
+                            separatorBuilder: (context, index) =>
+                                const Divider(),
+                            itemBuilder: (context, index) {
+                              final item = pedido.ctn00010[index];
+                              return ListTile(
+                                title: Text(
+                                  item.codigoProduto,
+                                ),
+                                subtitle: Text(
+                                  item.descricao,
+                                ),
+                                trailing: Text(
+                                  '${item.quantidade}x',
+                                ),
+                              );
+                            },
+                            itemCount: pedido.ctn00010.length,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-            ],
+                  ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _isCollapsed = !_isCollapsed;
+                    });
+                  },
+                  child: const Text('Ocultar pedidos'),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+              ],
+            ),
           ),
         ),
         Container(
@@ -730,6 +801,16 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text('Romaneio $codigoRomaneio'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _isCollapsed = !_isCollapsed;
+              });
+            },
+            icon: const Icon(Icons.home),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(

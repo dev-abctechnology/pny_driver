@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:pny_driver/shared/enviroment.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -89,7 +90,7 @@ class TokenVerificationInterceptor extends Interceptor {
     };
 
     final response = await dio.post(
-      'http://qas-abctech.ddns.net:8080/jarvis/oauth/token',
+      '$baseUrl/oauth/token',
       data: {
         'username': username,
         'password': password,

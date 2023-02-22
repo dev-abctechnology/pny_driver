@@ -30,6 +30,7 @@ class RomaneioData {
   late final String? meioDeTransporte;
   late final String? numeroPaletes;
   late final List<String?> statusGHS;
+  late final List<String?> statusApp;
   late final String? entregaPrevista;
   late final String? coletadoEm;
   late final SeletorT driver;
@@ -54,6 +55,7 @@ class RomaneioData {
       required this.meioDeTransporte,
       required this.numeroPaletes,
       required this.statusGHS,
+      required this.statusApp,
       required this.dataCriacao,
       required this.clientesRomaneio,
       required this.ultimaIntegracaoRecebidoGHS,
@@ -80,6 +82,10 @@ class RomaneioData {
     statusGHS = (json["slt_00002"] == null
         ? null
         : List<String>.from(json["slt_00002"]))!;
+
+    statusApp =
+        (json["slt_00003"] == null ? [] : List<String>.from(json["slt_00003"]));
+
     dataCriacao = json["slt_00001"];
     clientesRomaneio = (json["ctn_00007"] == null
         ? null
@@ -112,6 +118,7 @@ class RomaneioData {
     data["ipt_00011"] = meioDeTransporte;
     data["ipt_00010"] = numeroPaletes;
     data["slt_00002"] = statusGHS;
+    data["slt_00003"] = statusApp;
     data["slt_00001"] = dataCriacao;
     data["ctn_00007"] = clientesRomaneio.map((e) => e.toJson()).toList();
     data["slt_00008"] = ultimaIntegracaoRecebidoGHS;

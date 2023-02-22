@@ -14,6 +14,6 @@ class RomaneioLite {
     id = json["id"];
     code = json["code"];
     driver = json["data"]['slt_00005']['label'];
-    deliveryDate = json["data"]['slt_00001'];
+    deliveryDate = json["data"]['slt_00006'];
   }
 }

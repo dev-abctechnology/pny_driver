@@ -5,6 +5,7 @@ import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
 import 'package:either_dart/either.dart';
 import 'package:pny_driver/errors/auth_exception.dart';
+import 'package:pny_driver/shared/enviroment.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../auth_repository.dart';
@@ -25,7 +26,7 @@ class AuthUseCase {
       };
 
       final response = await _api.post(
-        'http://qas-abctech.ddns.net:8080/jarvis/oauth/token',
+        '$baseUrl/oauth/token',
         data: {
           'username': params.email,
           'password': params.password,
@@ -76,17 +77,11 @@ class AuthUseCase {
     };
 
     try {
-      var response = await dio.post(
-          'http://qas-abctech.ddns.net:8080/jarvis/api/core/users/filter',
-          data: {
-            "filters": [
-              {
-                "fieldName": "username",
-                "value": username,
-                "expression": "CONTAINS"
-              }
-            ]
-          });
+      var response = await dio.post('$baseUrl/api/core/users/filter', data: {
+        "filters": [
+          {"fieldName": "username", "value": username, "expression": "CONTAINS"}
+        ]
+      });
       print(response.data);
       if (response.statusCode == 200) {
         var resposta = await response.data;

@@ -2,6 +2,7 @@ import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
 import 'package:either_dart/either.dart';
 import 'package:pny_driver/interceptors/token_interceptor.dart';
+import 'package:pny_driver/shared/enviroment.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/models/romaneio_custom_api_model.dart';
@@ -27,7 +28,7 @@ class RomaneioJarvisController {
     try {
       final response = await api
           .post(
-        'http://qas-abctech.ddns.net:8080/jarvis/api/customized/security/PNY-RPVUPD01',
+        '$baseUrl/api/customized/security/PNY-RPVUPD01',
         data: entrega.toJson().toString(),
       )
           .onError((error, stackTrace) {
