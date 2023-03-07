@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pny_driver/domain/models/romaneio_model.dart';
 
 import '../domain/datasource/romaneio_datasource.dart';
+import 'delivery_details_page.dart';
 
 class HistoryDetails extends StatefulWidget {
   final String romaneioId;
@@ -74,61 +75,9 @@ class _HistoryDetailsState extends State<HistoryDetails> {
                     final cliente = listaClientes[index];
                     return InkWell(
                       onTap: () {
-                        showModalBottomSheet(
-                            context: context,
-                            builder: (context) {
-                              return DraggableScrollableSheet(
-                                initialChildSize: 0.5,
-                                minChildSize: 0.5,
-                                maxChildSize: 1,
-                                expand: false,
-                                builder: (context, controller) => Container(
-                                  color: Colors.white,
-                                  child: ListView(
-                                    controller: controller,
-                                    children: [
-                                      ListTile(
-                                          title: Text('Nome: ${cliente.nome}')),
-                                      ListTile(
-                                          title: Text('CNPJ: ${cliente.cnpj}')),
-                                      ListView.separated(
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        itemBuilder: (context, index) {
-                                          final item =
-                                              cliente.pedidosDevenda[index];
-                                          return ListTile(
-                                            title:
-                                                Text('Pedido: ${item.codigo}'),
-                                            subtitle: ListView.builder(
-                                              physics:
-                                                  const NeverScrollableScrollPhysics(),
-                                              itemBuilder: (context, index) {
-                                                final itemPedido =
-                                                    item.ctn00010[index];
-                                                return ListTile(
-                                                  title: Text(
-                                                      'Produto: ${itemPedido.descricao}'),
-                                                  subtitle: Text(
-                                                      'Quantidade: ${itemPedido.quantidade}'),
-                                                );
-                                              },
-                                              itemCount: item.ctn00010.length,
-                                              shrinkWrap: true,
-                                            ),
-                                          );
-                                        },
-                                        separatorBuilder: (context, index) =>
-                                            const Divider(),
-                                        itemCount:
-                                            cliente.pedidosDevenda.length,
-                                        shrinkWrap: true,
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              );
-                            });
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) =>
+                                DeliveryDetails(clienteRomaneio: cliente)));
                       },
                       child: ListTile(
                         title: Text(cliente.nome),

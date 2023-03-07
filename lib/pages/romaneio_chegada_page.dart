@@ -14,6 +14,7 @@ import 'dart:developer' as developer;
 import 'package:pny_driver/roteiro/controller/romaneio_jarvis_controllers.dart';
 
 import '../domain/models/romaneio_custom_api_model.dart';
+import 'delivery_details_page.dart';
 
 class RomaneioChegada extends StatefulWidget {
   const RomaneioChegada({
@@ -88,9 +89,13 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    setState(() {
-                      _isCollapsed = !_isCollapsed;
-                    });
+                    // setState(() {
+                    //   _isCollapsed = !_isCollapsed;
+                    // });
+
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) =>
+                            DeliveryDetails(clienteRomaneio: cliente)));
                   },
                   child: const Text('Ver pedidos'),
                 ),
@@ -801,16 +806,6 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text('Romaneio $codigoRomaneio'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              setState(() {
-                _isCollapsed = !_isCollapsed;
-              });
-            },
-            icon: const Icon(Icons.home),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(

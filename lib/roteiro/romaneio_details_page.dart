@@ -11,6 +11,7 @@ import 'package:location_geocoder/location_geocoder.dart';
 import 'package:pny_driver/config/custom_theme.dart';
 import 'package:pny_driver/config/google_maps_theme.dart';
 import 'package:pny_driver/domain/models/direction_suggestion.dart';
+import 'package:pny_driver/pages/delivery_details_page.dart';
 import 'package:pny_driver/pages/widgets/search_bar.dart';
 import 'package:pny_driver/pages/widgets/search_bar_widget.dart';
 import 'dart:developer' as developer;
@@ -884,6 +885,23 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
                             const SizedBox(
                               height: 8,
                             ),
+                            TextButton.icon(
+                                onPressed: () {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => DeliveryDetails(
+                                          clienteRomaneio: cliente)));
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                ),
+                                icon: const Icon(Icons.account_box),
+                                label: const Text(
+                                  'Detalhes',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                )),
                             cliente.entregue == false
                                 ? TextButton(
                                     onPressed: () {
