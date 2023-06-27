@@ -16,6 +16,7 @@ class RomaneioEntregue {
   String? codigoRastreio;
   String? servicoPostal;
   String statusEntrega;
+  String detalhamentoRomaneio;
   String statusAplicativo;
   List<PedidoEntregue> pedidos;
 
@@ -26,6 +27,7 @@ class RomaneioEntregue {
       required this.dataEntrega,
       required this.nomeRecebedor,
       required this.documentoRecebedor,
+      required this.detalhamentoRomaneio,
       required this.courier,
       this.codigoRastreio,
       this.servicoPostal,
@@ -40,6 +42,7 @@ class RomaneioEntregue {
     String? dataEntrega,
     String? nomeRecebedor,
     String? documentoRecebedor,
+    String? detalhamentoRomaneio,
     bool? courier,
     String? codigoRastreio,
     String? servicoPostal,
@@ -53,6 +56,7 @@ class RomaneioEntregue {
       imagemBase64: imagemBase64 ?? this.imagemBase64,
       dataEntrega: dataEntrega ?? this.dataEntrega,
       nomeRecebedor: nomeRecebedor ?? this.nomeRecebedor,
+      detalhamentoRomaneio: detalhamentoRomaneio ?? this.detalhamentoRomaneio,
       documentoRecebedor: documentoRecebedor ?? this.documentoRecebedor,
       courier: courier ?? this.courier,
       codigoRastreio: codigoRastreio ?? this.codigoRastreio,
@@ -74,6 +78,7 @@ class RomaneioEntregue {
       'COURIER': courier,
       'RASTREADOR': codigoRastreio,
       'SERVICO_POSTAL': servicoPostal,
+      'DETALHAMENTO_ROMANEIO': detalhamentoRomaneio,
       'STATUS_ENTREGA': statusEntrega,
       'STATUS_APP': statusAplicativo,
       'PEDIDOS': pedidos.map((x) => x.toMap()).toList(),
@@ -88,6 +93,7 @@ class RomaneioEntregue {
       dataEntrega: map['DATA_ENTREGA'] as String,
       nomeRecebedor: map['RECEBIDO_POR'] as String,
       documentoRecebedor: map['DOC_RECEBEDOR'] as String,
+      detalhamentoRomaneio: map['DETALHAMENTO'] as String,
       courier: map['COURIER'] as bool,
       codigoRastreio: map['RASTREADOR'] as String?,
       servicoPostal: map['SERVICO_POSTAL'] as String?,
@@ -106,7 +112,7 @@ class RomaneioEntregue {
 
   @override
   String toString() {
-    return 'codigoRomaneio: $codigoRomaneio, codigoCliente: $codigoCliente, imagemBase64: $imagemBase64, dataEntrega: $dataEntrega, nomeRecebedor: $nomeRecebedor, documentoRecebedor: $documentoRecebedor, courier: $courier, codigoRastreio: $codigoRastreio, servicoPostal: $servicoPostal, statusEntrega: $statusEntrega, statusAplicativo: $statusAplicativo, pedidos: $pedidos';
+    return 'codigoRomaneio: $codigoRomaneio, codigoCliente: $codigoCliente, detalhamentoRomaneio: $detalhamentoRomaneio, imagemBase64: $imagemBase64, dataEntrega: $dataEntrega, nomeRecebedor: $nomeRecebedor, documentoRecebedor: $documentoRecebedor, courier: $courier, codigoRastreio: $codigoRastreio, servicoPostal: $servicoPostal, statusEntrega: $statusEntrega, statusAplicativo: $statusAplicativo, pedidos: $pedidos';
   }
 
   @override
@@ -118,6 +124,7 @@ class RomaneioEntregue {
         other.imagemBase64 == imagemBase64 &&
         other.dataEntrega == dataEntrega &&
         other.nomeRecebedor == nomeRecebedor &&
+        other.detalhamentoRomaneio == detalhamentoRomaneio &&
         other.documentoRecebedor == documentoRecebedor &&
         other.courier == courier &&
         other.codigoRastreio == codigoRastreio &&
@@ -134,6 +141,7 @@ class RomaneioEntregue {
         imagemBase64.hashCode ^
         dataEntrega.hashCode ^
         nomeRecebedor.hashCode ^
+        detalhamentoRomaneio.hashCode ^
         documentoRecebedor.hashCode ^
         courier.hashCode ^
         codigoRastreio.hashCode ^

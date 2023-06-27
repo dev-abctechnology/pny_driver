@@ -1,40 +1,55 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../shared/enviroment.dart';
 
 class PlaceService {
-  Dio api;
+  static const _baseUrl =
+      'https://maps.googleapis.com/maps/api/place/autocomplete/json';
+  static final String _apiKey = apiKey;
 
-  PlaceService(this.api);
+  final Dio _api;
 
-  Future getPlace(String input) async {
-    if (input.isNotEmpty) {
-      String url =
-          "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&key=$apiKey&language=pt-BR&components=country:br";
+  PlaceService(this._api);
 
-      Response response = await api.get(url);
+  Future<List<PlacePrediction>> getPlace({required String searchText}) async {
+    try {
+      final url =
+          '$_baseUrl?input=$searchText&key=$_apiKey&language=pt-BR&components=country:br';
+
+      final response = await _api.get(url);
       if (response.statusCode == 200) {
-        var jsonData = response.data;
-        var status = jsonData["status"];
-        if (status == "OK") {
-          var predictions = jsonData["predictions"];
-          List<PlacePrediction> placePredictions = [];
-          for (var i = 0; i < predictions.length; i++) {
-            placePredictions.add(PlacePrediction(
-                predictions[i]["place_id"], predictions[i]["description"]));
-          }
+        final jsonData = response.data;
+        final status = jsonData['status'];
+
+        if (status == 'OK') {
+          final predictions = jsonData['predictions'] as List<dynamic>;
+          final placePredictions = predictions
+              .map((prediction) => PlacePrediction.fromJson(prediction))
+              .toList();
+
           return placePredictions;
         }
       }
+    } on DioError catch (e) {
+      // Handle network errors
+      debugPrint('Error fetching place predictions: $e');
     }
 
-    return null;
+    return [];
   }
 }
 
 class PlacePrediction {
-  String placeId;
-  String description;
+  final String placeId;
+  final String description;
 
-  PlacePrediction(this.placeId, this.description);
+  PlacePrediction({required this.placeId, required this.description});
+
+  factory PlacePrediction.fromJson(Map<String, dynamic> json) {
+    return PlacePrediction(
+      placeId: json['place_id'] as String,
+      description: json['description'] as String,
+    );
+  }
 }

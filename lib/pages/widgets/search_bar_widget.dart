@@ -36,7 +36,7 @@ class AddressSearch extends SearchDelegate {
   @override
   Widget buildSuggestions(BuildContext context) {
     return FutureBuilder(
-      future: placeService.getPlace(query),
+      future: placeService.getPlace(searchText: query),
       builder: (context, snapshot) => query == ''
           ? Container(
               padding: const EdgeInsets.all(16.0),
@@ -46,9 +46,9 @@ class AddressSearch extends SearchDelegate {
               ? ListView.builder(
                   itemBuilder: (context, index) => ListTile(
                     // we will display the data returned from our future here
-                    title: Text("${snapshot.data![index].description}"),
+                    title: Text(snapshot.data![index].description),
                     onTap: () {
-                      close(context, snapshot.data[index]);
+                      close(context, snapshot.data![index]);
                     },
                   ),
                   itemCount: snapshot.data!.length,

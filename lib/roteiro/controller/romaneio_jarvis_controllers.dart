@@ -35,7 +35,7 @@ class RomaneioJarvisController {
         developer.log(error.toString());
         developer.log(stackTrace.toString());
 
-        throw Exception('Erro ao atualizar o romaneio');
+        throw Exception('Erro ao atualizar o romaneio: $error');
       });
 
       developer.log(response.statusCode.toString());
@@ -47,12 +47,13 @@ class RomaneioJarvisController {
       } else {
         developer.log(response.data.toString());
 
-        return Left(Exception('Erro ao atualizar o romaneio'));
+        return Left(
+            Exception('Erro ao atualizar o romaneio: ${response.data}'));
       }
     } on DioError catch (e, s) {
       developer.log(e.toString());
       developer.log(s.toString());
-      return Left(Exception('Erro ao atualizar o romaneio'));
+      return Left(Exception('Erro ao atualizar o romaneio $e'));
     }
   }
 }

@@ -308,9 +308,9 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
       backgroundColor: Colors.transparent,
       context: context,
       builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.3,
-        minChildSize: 0.3,
-        maxChildSize: 0.5,
+        initialChildSize: 0.6,
+        minChildSize: 0.1,
+        maxChildSize: 0.6,
         builder: (context, scrollController) => Container(
           decoration: BoxDecoration(
             color: Palette.customGreyDark.withAlpha(245),
@@ -319,8 +319,9 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
               topRight: Radius.circular(20),
             ),
           ),
-          height: 400,
-          child: Column(
+          // height: 400,
+          child: ListView(
+            controller: scrollController,
             children: [
               const Padding(
                 padding: EdgeInsets.all(8.0),

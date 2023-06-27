@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pny_driver/domain/datasource/romaneio_datasource.dart';
 import 'package:pny_driver/domain/models/romaneio_lite_model.dart';
+import 'package:pny_driver/pages/widgets/spacer_widget.dart';
 import 'package:pny_driver/roteiro/romaneio_details_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -100,9 +101,6 @@ class _HomePageState extends State<HomePage> {
               romaneio: romaneio,
             )));
   }
-
-  var idcontroller = TextEditingController(text: '6125567e2212ef0ad848d7ae');
-  String nome = '';
 
   Future<bool> initializeSharedPreferences() async {
     try {
@@ -271,229 +269,228 @@ class _HomePageState extends State<HomePage> {
       onRefresh: () async {
         await initialSearch();
       },
-      child: romaneios.isEmpty
-          ? ListView(
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(top: 100),
-                      alignment: Alignment.center,
-                      child: Lottie.asset(
-                        isLoading == true
-                            ? 'assets/searching.json'
-                            : 'assets/empty_box.json',
-                        frameBuilder: (context, child, composition) {
-                          //RETURN A SHIMMER EFFECT IF THE ANIMATION IS NOT LOADED
-                          if (composition == null) {
-                            return const CircularProgressIndicator();
-                          }
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: child,
-                          );
-                        },
-                        repeat: true,
-                        frameRate: FrameRate(60),
-                      ),
-                    ),
-                    Text(
-                      isLoading == true
-                          ? 'Carregando...'
-                          : 'Nenhum romaneio encontrado, tente novamente mais tarde',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ],
-            )
-          : ListView(
-              shrinkWrap: true,
-              children: [
-                ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: romaneios.length,
-                    physics: const BouncingScrollPhysics(
-                        parent: AlwaysScrollableScrollPhysics()),
-                    padding: const EdgeInsets.all(8),
-                    itemBuilder: (BuildContext context, int index) {
-                      return Card(
-                        child: InkWell(
-                          onTap: () async {
-                            var permission = await _checkPermission();
-                            if (permission == true) {
-                              _romaneioSelectedHandler(romaneios[index].id);
-                            } else {
-                              showLocationPermissionDialog();
-                            }
-                          },
-                          child: Column(
-                            children: [
-                              ListTile(
-                                title: Text(
-                                  'Romaneio: ${romaneios[index].code}',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20),
-                                ),
-                                subtitle: Text(
-                                    'Data: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(romaneios[index].deliveryDate))}',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                    )),
-                              ),
-                            ],
-                          ),
+      child: romaneios.isEmpty ? romaneiosEmpty() : romaneiosFounded(),
+    );
+  }
+
+  ListView romaneiosFounded() {
+    return ListView(
+      shrinkWrap: true,
+      children: [
+        ListView.builder(
+            shrinkWrap: true,
+            itemCount: romaneios.length,
+            physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics()),
+            padding: const EdgeInsets.all(8),
+            itemBuilder: (BuildContext context, int index) {
+              return Card(
+                child: InkWell(
+                  onTap: () async {
+                    var permission = await _checkPermission();
+                    if (permission == true) {
+                      _romaneioSelectedHandler(romaneios[index].id);
+                    } else {
+                      showLocationPermissionDialog();
+                    }
+                  },
+                  child: Column(
+                    children: [
+                      ListTile(
+                        title: Text(
+                          'Romaneio: ${romaneios[index].code}',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 20),
                         ),
-                      );
-                    }),
-                Column(
-                  children: [
-                    Container(
-                      child: Lottie.asset(
-                        isLoading == true
-                            ? 'assets/searching.json'
-                            : 'assets/romaneio.json',
-                        frameBuilder: (context, child, composition) {
-                          if (composition == null) {
-                            return const CircularProgressIndicator();
-                          }
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: child,
-                          );
-                        },
+                        subtitle: Text(
+                            'Data: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(romaneios[index].deliveryDate))}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            )),
                       ),
-                    ),
-                    Text(
-                      isLoading == true
-                          ? 'Carregando...'
-                          : 'Toque em um romaneio para ver mais detalhes',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                )
-              ],
+                    ],
+                  ),
+                ),
+              );
+            }),
+        Column(
+          children: [
+            Container(
+              child: Lottie.asset(
+                isLoading == true
+                    ? 'assets/searching.json'
+                    : 'assets/romaneio.json',
+                frameBuilder: (context, child, composition) {
+                  if (composition == null) {
+                    return const CircularProgressIndicator();
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: child,
+                  );
+                },
+              ),
             ),
+            Text(
+              isLoading == true
+                  ? 'Carregando...'
+                  : 'Toque em um romaneio para ver mais detalhes',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ],
+        )
+      ],
+    );
+  }
+
+  ListView romaneiosEmpty() {
+    return ListView(
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 100),
+              alignment: Alignment.center,
+              child: Lottie.asset(
+                isLoading == true
+                    ? 'assets/searching.json'
+                    : 'assets/empty_box.json',
+                frameBuilder: frameBuilderShimmer,
+                repeat: true,
+                frameRate: FrameRate(60),
+              ),
+            ),
+            Text(
+              isLoading == true
+                  ? 'Carregando...'
+                  : 'Nenhum romaneio encontrado, tente novamente mais tarde',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget frameBuilderShimmer(context, child, composition) {
+    if (composition == null) {
+      return const CircularProgressIndicator();
+    }
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: child,
     );
   }
 
   showLocationPermissionDialog() {
     return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Permissão de localização'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  '"Persianas New York: Entregas" usa sua localização para:',
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Row(
-                  children: const [
-                    Icon(
-                      Icons.circle,
-                      color: Colors.grey,
-                      size: 10,
-                    ),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Expanded(
-                      child: Text(
-                        'Determinar sua localização atual para que você possa ver a rota até os clientes.',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Row(
-                  children: const [
-                    Icon(
-                      Icons.warning_amber_outlined,
-                      color: Colors.orange,
-                    ),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Expanded(
-                      child: Text(
-                        'Sua localização só estará em uso quando o aplicativo estiver aberto ou quando você estiver em trânsito e colocar o apliativo em segundo plano.',
-                        style: TextStyle(color: Colors.orange),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Row(
-                  children: const [
-                    Icon(
-                      Icons.close_rounded,
-                      color: Colors.green,
-                    ),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Expanded(
-                      child: Text(
-                        'Quando você fechar o aplicativo, fique tranquilo, sua localização não será utilizada.',
-                        style: TextStyle(color: Colors.green),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            actionsAlignment: MainAxisAlignment.spaceBetween,
-            actions: [
-              TextButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  icon: const Icon(
-                    Icons.do_disturb,
-                    color: Colors.red,
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Permissão de localização'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                '"Persianas New York: Entregas" usa sua localização para:',
+              ),
+              const SpacerBox(),
+              Row(
+                children: const [
+                  Icon(
+                    Icons.circle,
+                    color: Colors.grey,
+                    size: 10,
                   ),
-                  label: const Text(
-                    'Não permitir',
-                    style: TextStyle(color: Colors.red),
-                  )),
-              //textButton with Icon and Text
-              TextButton.icon(
-                  onPressed: () async {
-                    await _requestPermission().then((value) {
-                      _checkPermission().then((value) {
-                        if (value == true) {
-                          Navigator.of(context).pop();
-                        }
-                      });
-                    });
-                  },
-                  icon: const Icon(
-                    Icons.location_on,
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Determinar sua localização atual para que você possa ver a rota até os clientes.',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                ],
+              ),
+              const SpacerBox(),
+              Row(
+                children: const [
+                  Icon(
+                    Icons.warning_amber_outlined,
+                    color: Colors.orange,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Sua localização só estará em uso quando o aplicativo estiver aberto ou quando você estiver em trânsito e colocar o apliativo em segundo plano.',
+                      style: TextStyle(color: Colors.orange),
+                    ),
+                  ),
+                ],
+              ),
+              const SpacerBox(),
+              Row(
+                children: const [
+                  Icon(
+                    Icons.close_rounded,
                     color: Colors.green,
                   ),
-                  label: const Text(
-                    'Permitir',
-                    style: TextStyle(color: Colors.green),
-                  ))
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Quando você fechar o aplicativo, fique tranquilo, sua localização não será utilizada.',
+                      style: TextStyle(color: Colors.green),
+                    ),
+                  ),
+                ],
+              ),
             ],
-          );
-        });
+          ),
+          actionsAlignment: MainAxisAlignment.spaceBetween,
+          actions: [
+            TextButton.icon(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                icon: const Icon(
+                  Icons.do_disturb,
+                  color: Colors.red,
+                ),
+                label: const Text(
+                  'Não permitir',
+                  style: TextStyle(color: Colors.red),
+                )),
+            //textButton with Icon and Text
+            TextButton.icon(
+                onPressed: () async {
+                  await _requestPermission().then((value) {
+                    _checkPermission().then((value) {
+                      if (value == true) {
+                        Navigator.of(context).pop();
+                      }
+                    });
+                  });
+                },
+                icon: const Icon(
+                  Icons.location_on,
+                  color: Colors.green,
+                ),
+                label: const Text(
+                  'Permitir',
+                  style: TextStyle(color: Colors.green),
+                ))
+          ],
+        );
+      },
+    );
   }
 }

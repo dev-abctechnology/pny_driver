@@ -1,17 +1,19 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:brasil_fields/brasil_fields.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'package:pny_driver/domain/models/pedido_entregue.dart';
 import 'package:pny_driver/domain/models/romaneio_model.dart';
-import 'dart:developer' as developer;
-
+import 'package:pny_driver/pages/widgets/spacer_widget.dart';
 import 'package:pny_driver/roteiro/controller/romaneio_jarvis_controllers.dart';
+import 'package:pny_driver/utils/cpf_validator.dart';
 
 import '../domain/models/romaneio_custom_api_model.dart';
 import 'delivery_details_page.dart';
@@ -283,9 +285,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
                     return null;
                   },
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SpacerBox(),
                 TextFormField(
                   controller: _entregueDocumentoController,
                   decoration: const InputDecoration(
@@ -319,23 +319,25 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
                       }
                     }
 
+                    if (value.length == 18) {
+                      if (!CNPJValidator.isValid(value)) {
+                        return 'CNPJ inválido';
+                      }
+                    }
+
                     return null;
                   },
                 ),
-                // SizedBox(
-                //   height: 10,
-                // ),
-                // TextFormField(
-                //   controller: _entregueDetalhamentoController,
-                //   decoration: const InputDecoration(
-                //       labelText: 'Detalhamento da entrega',
-                //       border: OutlineInputBorder(
-                //           borderRadius:
-                //               BorderRadius.all(Radius.circular(10.0)))),
-                // ),
-                const SizedBox(
-                  height: 10,
+                const SpacerBox(),
+                TextFormField(
+                  controller: _entregueDetalhamentoController,
+                  decoration: const InputDecoration(
+                      labelText: 'Detalhamento da entrega',
+                      border: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(10.0)))),
                 ),
+                const SpacerBox(),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -500,6 +502,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
           nomeRecebedor: 'Não entregue',
           documentoRecebedor: '000.000.000-00',
           courier: false,
+          detalhamentoRomaneio: '',
           statusEntrega: 'motivo: ${_naoEntregueController.text}',
           statusAplicativo: 'A2',
           codigoRomaneio: codigoRomaneio,
@@ -582,6 +585,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
         dataEntrega: dateNow,
         nomeRecebedor: _entregueNomeController.text,
         documentoRecebedor: _entregueDocumentoController.text,
+        detalhamentoRomaneio: _entregueDetalhamentoController.text,
         courier: false,
         statusEntrega: 'Entregue',
         statusAplicativo: 'A2',
@@ -647,7 +651,7 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
               children: [
                 Text('Documento: ${_entregueDocumentoController.text}'),
                 Text(_entregueDetalhamentoController.text == ''
-                    ? 'Sem detalhamento'
+                    ? 'Sem observações'
                     : _entregueDetalhamentoController.text),
               ],
             ),
@@ -817,114 +821,5 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
         ),
       ),
     );
-  }
-}
-
-class CNPJ {
-  static String mask(String value) {
-    return value
-        .replaceAllMapped(
-          RegExp(r'(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})'),
-          (match) =>
-              '${match[1]}.${match[2]}.${match[3]}/${match[4]}-${match[5]}',
-        )
-        .replaceAll(RegExp(r'[^0-9]'), '');
-  }
-
-  static String unmask(String value) {
-    return value.replaceAll(RegExp(r'[^0-9]'), '');
-  }
-
-  static bool isValid(String value) {
-    if (value.isEmpty) return false;
-
-    final unmasked = unmask(value);
-    if (unmasked.length != 14) return false;
-
-    final numbers = unmasked.split('').map(int.parse).toList();
-
-    var sum = 0;
-    for (var i = 0; i < 12; i++) {
-      sum += numbers[i] * (13 - (i + 1));
-    }
-
-    var result = (sum % 11);
-    if (result < 2) {
-      result = 0;
-    } else {
-      result = 11 - result;
-    }
-
-    if (result != numbers[12]) return false;
-
-    sum = 0;
-    for (var i = 0; i < 13; i++) {
-      sum += numbers[i] * (14 - (i + 1));
-    }
-
-    result = (sum % 11);
-    if (result < 2) {
-      result = 0;
-    } else {
-      result = 11 - result;
-    }
-
-    if (result != numbers[13]) return false;
-
-    return true;
-  }
-}
-
-class CPF {
-  static String mask(String value) {
-    return value
-        .replaceAllMapped(
-          RegExp(r'(\d{3})(\d{3})(\d{3})(\d{2})'),
-          (match) => '${match[1]}.${match[2]}.${match[3]}-${match[4]}',
-        )
-        .replaceAll(RegExp(r'[^0-9]'), '');
-  }
-
-  static String unmask(String value) {
-    return value.replaceAll(RegExp(r'[^0-9]'), '');
-  }
-
-  static bool isValid(String value) {
-    if (value.isEmpty) return false;
-
-    final unmasked = unmask(value);
-    if (unmasked.length != 11) return false;
-
-    final numbers = unmasked.split('').map(int.parse).toList();
-    final firstDigit = numbers[9];
-    final secondDigit = numbers[10];
-
-    var sum = 0;
-    for (var i = 0; i < 9; i++) {
-      sum += numbers[i] * (10 - i);
-    }
-
-    var mod = sum % 11;
-    if (mod < 2) {
-      mod = 0;
-    } else {
-      mod = 11 - mod;
-    }
-
-    if (mod != firstDigit) return false;
-
-    sum = 0;
-    for (var i = 0; i < 10; i++) {
-      sum += numbers[i] * (11 - i);
-    }
-
-    mod = sum % 11;
-    if (mod < 2) {
-      mod = 0;
-    } else {
-      mod = 11 - mod;
-    }
-
-    return mod == secondDigit;
   }
 }
