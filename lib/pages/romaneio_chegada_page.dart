@@ -594,7 +594,13 @@ class _RomaneioChegadaState extends State<RomaneioChegada> {
       ))
           .then((value) async {
         developer.log('value: $value', name: 'resposta do jarvis');
-
+        List<String> codigoPedidos = [];
+        for (var i = 0; i < cliente.pedidosDevenda.length; i++) {
+          codigoPedidos.add(cliente.pedidosDevenda[i].codigo);
+        }
+        jarvisController.executePipeline(codigoPedidos).then((value) {
+          developer.log('value: $value', name: 'resposta da GHS');
+        });
         //close loading dialog
         Navigator.pop(context);
 
