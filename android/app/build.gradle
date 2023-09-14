@@ -24,8 +24,19 @@ if (flutterVersionName == null) {
  def keystoreProperties = new Properties()
    def keystorePropertiesFile = rootProject.file('key.properties')
    if (keystorePropertiesFile.exists()) {
-       keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-   }
+    println 'Keystore properties file found'
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    println 'keyAlias: ' + keystoreProperties['keyAlias']
+    println 'keyPassword: ' + keystoreProperties['keyPassword']
+    println 'storePassword: ' + keystoreProperties['storePassword']
+    println 'storeFile: ' + keystoreProperties['storeFile']
+}else {
+    println 'Keystore properties file NOT found'
+    keystoreProperties['keyAlias'] = 'upload'
+    keystoreProperties['keyPassword'] = '@BCtech2022@'
+    keystoreProperties['storeFile'] = 'C:/Users/abc/upload-keystore.jks'
+    keystoreProperties['storePassword'] = '@BCtech2022@'
+}
 
 
 
@@ -57,7 +68,7 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-build-configuration.
         minSdkVersion 21
-        targetSdkVersion flutter.targetSdkVersion
+        targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }

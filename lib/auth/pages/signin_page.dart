@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:pny_driver/auth/token/token_store.dart';
 import 'package:pny_driver/config/custom_theme.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../auth_repository.dart';
 import '../usecases/signin.dart';
@@ -172,6 +173,26 @@ class _SignInState extends State<SignIn> {
                                   child: const Text('Entrar'),
                                 ),
                               ),
+                        // butão para abrir a politica de privacidade http://www.abctechnology.com.br/privacy_pny_driver.html launchUrl
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            launchUrl(
+                              Uri.parse(
+                                  'https://abctechnology.com.br/privacy_pny_driver.html'),
+                              mode: LaunchMode.externalNonBrowserApplication,
+                              webOnlyWindowName: '_blank',
+                            );
+                          },
+                          child: const Text(
+                            'Política de Privacidade',
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
