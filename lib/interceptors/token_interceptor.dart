@@ -3,24 +3,28 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:pny_driver/shared/enviroment.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TokenVerificationInterceptor extends Interceptor {
   Dio api;
+  int counter = 0;
 
   TokenVerificationInterceptor(this.api);
 
   @override
   Future<void> onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
+    counter++;
+    print(counter);
     print('REQUEST[${options.method}] => PATH: ${options.path}');
 
-    var validation = await checkToken(options);
-    if (validation.statusCode == 401) {
+    var isExpired = await checkToken(options);
+    if (isExpired) {
       print('token invalido');
-      print(validation.data);
+      print(isExpired);
       bool refresh;
       try {
         refresh = await refreshToken();
@@ -55,22 +59,10 @@ class TokenVerificationInterceptor extends Interceptor {
     return super.onError(err, handler);
   }
 
-  Future<Response> checkToken(RequestOptions options) async {
-    var dio = Dio();
-
-    try {
-      dio.options.headers = options.headers;
-
-      print(options.path);
-      print(options.queryParameters);
-
-      var response = await dio.request(options.path,
-          data: options.data, queryParameters: options.queryParameters);
-
-      return response;
-    } catch (e) {
-      return Response(statusCode: 401, requestOptions: options);
-    }
+  Future<bool> checkToken(RequestOptions options) async {
+    var prefs = await SharedPreferences.getInstance();
+    String? yourToken = prefs.getString('token');
+    return JwtDecoder.isExpired(yourToken!);
   }
 
   Future<bool> refreshToken() async {
