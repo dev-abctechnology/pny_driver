@@ -12,17 +12,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class RomaneioDataSource {
   final _dio = Dio();
-
+  RomaneioDataSource() {
+    _dio.interceptors.add(TokenVerificationInterceptor(_dio));
+  }
   Future<List<RomaneioLite>> getRomaneiosLite(user) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
-
-    _dio.interceptors.add(TokenVerificationInterceptor(_dio));
+    print(token);
 
     _dio.options.headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'Authentication': 'Bearer $token',
+      'Authorization':
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDMwMTQ0MjgsInVzZXJfbmFtZSI6IlBSRC1RSUI0OmVkc29uLm1vdG9yaXN0YSIsImF1dGhvcml0aWVzIjpbIkNPUkVfVVNFUnwwMDEwMDAwIiwiU1RVRkZfTUVOVXwwMDEwMDAwMDAwIiwiU1RVRkZfUC1QTlktWVJPTU8tMDF8MDAxMDAwMCJdLCJqdGkiOiI0Z1JGN21SMXhKV2tvZ19TSnlsdm5IX3VjUUkiLCJjbGllbnRfaWQiOiJ3ZWJAamFydmlzLjIwMjEiLCJzY29wZSI6WyJyZWFkIiwid3JpdGUiXX0.4JA35mDZ4FGFPZvR86MZd49kvTzmxzZYevKEI9reqy8',
       'X-stuff-code': 'p-pny-yromo-01'
     };
 //variable with actual date in format 2022-12-08T03
