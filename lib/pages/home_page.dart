@@ -94,7 +94,7 @@ class _HomePageState extends State<HomePage> {
           );
         });
 
-    var romaneio = await RomaneioDataSource().getRomaneioById(id);
+    var romaneio = await dataSource.getRomaneioById(id);
     Navigator.of(context).pop();
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => RomaneioDetails(
