@@ -25,7 +25,7 @@ class HistoricoRepository with ChangeNotifier {
     dio.options.headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'Authentication': 'Bearer $token',
+      'Authorization': 'Bearer $token',
       'X-stuff-code': 'p-pny-yromo-01'
     };
 
