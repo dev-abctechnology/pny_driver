@@ -13,14 +13,13 @@ import '../../domain/models/romaneio_custom_api_model.dart';
 class RomaneioJarvisController {
   Dio api;
 
-  RomaneioJarvisController(this.api);
-
+  RomaneioJarvisController(this.api) {
+    api.interceptors.add(TokenVerificationInterceptor(Dio()));
+  }
   Future<Either<Exception, String>> updateRomaneio(
       RomaneioEntregue entrega) async {
     var prefs = await SharedPreferences.getInstance();
     var token = prefs.getString('token');
-
-    api.interceptors.add(TokenVerificationInterceptor(Dio()));
 
     api.options.headers = {
       'Content-Type': 'application/json',
