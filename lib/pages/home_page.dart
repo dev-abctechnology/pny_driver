@@ -291,7 +291,10 @@ class _HomePageState extends State<HomePage> {
                     if (permission == true) {
                       _romaneioSelectedHandler(romaneios[index].id);
                     } else {
-                      showLocationPermissionDialog();
+                      bool kkk = await showLocationPermissionDialog();
+                      if (kkk) {
+                        _romaneioSelectedHandler(romaneios[index].id);
+                      }
                     }
                   },
                   child: Column(
@@ -459,7 +462,7 @@ class _HomePageState extends State<HomePage> {
           actions: [
             TextButton.icon(
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(false);
                 },
                 icon: const Icon(
                   Icons.do_disturb,
@@ -475,7 +478,7 @@ class _HomePageState extends State<HomePage> {
                   await _requestPermission().then((value) {
                     _checkPermission().then((value) {
                       if (value == true) {
-                        Navigator.of(context).pop();
+                        Navigator.of(context).pop(true);
                       }
                     });
                   });
