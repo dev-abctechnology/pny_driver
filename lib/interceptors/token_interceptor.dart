@@ -62,7 +62,8 @@ class TokenVerificationInterceptor extends Interceptor {
   Future<bool> checkToken(RequestOptions options) async {
     var prefs = await SharedPreferences.getInstance();
     String? yourToken = prefs.getString('token');
-    return JwtDecoder.isExpired(yourToken!);
+    bool isExpired = JwtDecoder.isExpired(yourToken!);
+    return isExpired;
   }
 
   Future<bool> refreshToken() async {
