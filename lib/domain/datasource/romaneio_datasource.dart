@@ -23,8 +23,7 @@ class RomaneioDataSource {
     _dio.options.headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'Authorization':
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDMwMTQ0MjgsInVzZXJfbmFtZSI6IlBSRC1RSUI0OmVkc29uLm1vdG9yaXN0YSIsImF1dGhvcml0aWVzIjpbIkNPUkVfVVNFUnwwMDEwMDAwIiwiU1RVRkZfTUVOVXwwMDEwMDAwMDAwIiwiU1RVRkZfUC1QTlktWVJPTU8tMDF8MDAxMDAwMCJdLCJqdGkiOiI0Z1JGN21SMXhKV2tvZ19TSnlsdm5IX3VjUUkiLCJjbGllbnRfaWQiOiJ3ZWJAamFydmlzLjIwMjEiLCJzY29wZSI6WyJyZWFkIiwid3JpdGUiXX0.4JA35mDZ4FGFPZvR86MZd49kvTzmxzZYevKEI9reqy8',
+      'Authorization': 'Bearer $token',
       'X-stuff-code': 'p-pny-yromo-01'
     };
 //variable with actual date in format 2022-12-08T03
