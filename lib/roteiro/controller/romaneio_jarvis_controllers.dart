@@ -127,7 +127,7 @@ class RomaneioJarvisController {
     var data = json.encode({
       "indicador": "I",
       "codigo_pv": int.parse(pedido),
-      "codigo_empresa": "7",
+      "codigo_empresa": "4",
       "status": "ENTREGUE",
       "data_entrega_efetuada": dateFormatted
     });
