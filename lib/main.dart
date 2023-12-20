@@ -55,6 +55,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         title: 'Persianas New York Driver',
         theme: ThemeData(
           fontFamily: 'Nunito',
+          useMaterial3: false,
           brightness: Brightness.light,
           primarySwatch: Palette.customGreyDark,
         ),
