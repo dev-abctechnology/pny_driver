@@ -12,6 +12,10 @@ class HistoricoRepository with ChangeNotifier {
   int _index = 0;
   // ignore: prefer_final_fields
   var _historico = <RomaneioLite>[];
+  final dio = Dio();
+  HistoricoRepository() {
+    dio.interceptors.add(TokenVerificationInterceptor(dio));
+  }
 
   List<RomaneioLite> get historico => _historico;
 
@@ -19,8 +23,6 @@ class HistoricoRepository with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
     String username = prefs.getString('name') ?? '';
-    final dio = Dio();
-    dio.interceptors.add(TokenVerificationInterceptor(dio));
 
     dio.options.headers = {
       'Content-Type': 'application/json',
