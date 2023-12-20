@@ -319,67 +319,42 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
               topRight: Radius.circular(20),
             ),
           ),
-          // height: 400,
-          child: ListView(
-            controller: scrollController,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Padding(
-                padding: EdgeInsets.all(8.0),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
                 child: Text(
                   'Escolha o aplicativo de navegação',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Palette.persianasColor),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Palette.persianasColor,
+                  ),
                 ),
               ),
-              //button with icon from network
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(50),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: IconButton(
-                      iconSize: 75,
-                      icon: Image.asset(
-                        'assets/waze.png',
-                        fit: BoxFit.cover,
-                      ),
-                      onPressed: () {
-                        launchWaze(
-                                '${e.logradouro} ${e.numero}- ${e.complemento}, ${e.bairro}, ${e.cidade}, ${e.cep}, ${e.cidade}')
-                            .then((value) async {
-                          await checkPermissionAndAddToBackground();
-                          Navigator.of(context).pop(true);
-                        });
-                      },
-                    ),
+                  _buildNavigationButton(
+                    iconPath: 'assets/waze.png',
+                    onPressed: () async {
+                      await launchNavigation(
+                        e,
+                        launchFunction: launchWaze,
+                      );
+                    },
                   ),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(50),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: IconButton(
-                      iconSize: 75,
-                      onPressed: () {
-                        launchGoogleMaps(
-                                '${e.logradouro} ${e.numero}- ${e.complemento}, ${e.bairro}, ${e.cidade}, ${e.cep}, ${e.cidade}')
-                            .then((value) async {
-                          await checkPermissionAndAddToBackground();
-
-                          Navigator.of(context).pop(true);
-                        });
-                      },
-                      icon: Image.asset(
-                        'assets/google_maps.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+                  _buildNavigationButton(
+                    iconPath: 'assets/google_maps.png',
+                    onPressed: () async {
+                      await launchNavigation(
+                        e,
+                        launchFunction: launchGoogleMaps,
+                      );
+                    },
                   ),
                 ],
               )
@@ -388,6 +363,45 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
         ),
       ),
     );
+  }
+
+  Widget _buildNavigationButton({
+    required String iconPath,
+    required VoidCallback onPressed,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white.withAlpha(50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+          ),
+        ),
+        child: Container(
+          height: MediaQuery.sizeOf(context).height * 0.1,
+          width: MediaQuery.sizeOf(context).height * 0.1,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Image.asset(
+              iconPath,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> launchNavigation(
+    EnderecoTemplate e, {
+    required Future<void> Function(String) launchFunction,
+  }) async {
+    await launchFunction(
+      '${e.logradouro} ${e.numero}- ${e.complemento}, ${e.bairro}, ${e.cidade}, ${e.cep}, ${e.cidade}',
+    );
+    await checkPermissionAndAddToBackground();
+    Navigator.of(context).pop(true);
   }
 
   late Map timeAndDistance;
