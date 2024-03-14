@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:pny_driver/domain/datasource/romaneio_datasource.dart';
 import 'package:pny_driver/domain/models/romaneio_lite_model.dart';
 import 'package:pny_driver/pages/widgets/spacer_widget.dart';
@@ -475,6 +476,12 @@ class _HomePageState extends State<HomePage> {
             //textButton with Icon and Text
             TextButton.icon(
                 onPressed: () async {
+                  PermissionStatus status =
+                      await Permission.notification.status;
+                  if (!status.isGranted) {
+// The permission is not granted, request it.
+                    status = await Permission.notification.request();
+                  }
                   await _requestPermission().then((value) {
                     _checkPermission().then((value) {
                       if (value == true) {

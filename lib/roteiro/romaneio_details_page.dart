@@ -1000,15 +1000,15 @@ class _RomaneioDetailsState extends State<RomaneioDetails> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Romaneio ${romaneio.code}'),
-        actions: const [
-          // IconButton(
-          //     onPressed: () async {
-          //       // _getPositionHandler();
-          //       // developer.log(marcadores.toString());
-          //       // _printPoly();
-          //       _printMarker();
-          //     },
-          //     icon: const Icon(Icons.directions))
+        actions: [
+          IconButton(
+              onPressed: () async {
+                flutter_background.FlutterBackground
+                    .enableBackgroundExecution();
+                print(flutter_background
+                    .FlutterBackground.isBackgroundExecutionEnabled);
+              },
+              icon: const Icon(Icons.directions))
         ],
       ),
       extendBody: true,
