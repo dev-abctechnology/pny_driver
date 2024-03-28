@@ -61,10 +61,10 @@ class _HistoryDetailsState extends State<HistoryDetails> {
                       'Status: ${status[romaneio.value!.data.statusApp.length]}')),
               ListTile(
                   title: Text(
-                      'data de criação: ${formatDate(entregaPrevista, pattern)}')),
+                      'data de criação: ${formatDate(dataCriacao, pattern)}')),
               ListTile(
                   title: Text(
-                      'Entrega prevista: ${formatDate(dataCriacao, pattern)}')),
+                      'Entrega prevista: ${formatDate(entregaPrevista, pattern)}')),
               const Divider(),
               ListView.separated(
                   physics: const NeverScrollableScrollPhysics(),
