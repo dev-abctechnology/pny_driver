@@ -52,6 +52,14 @@ class RomaneioDataSource {
         romaneios.map((romaneio) => RomaneioLite.fromJson(romaneio)).toList();
     var romaneioDeHoje =
         a.where((element) => element.deliveryDate.contains(date)).toList();
+
+    var tommorow =
+        '${DateTime.now().add(const Duration(days: 1)).toString().substring(0, 10)}T03';
+    var romaneioDeAmanha =
+        a.where((element) => element.deliveryDate.contains(tommorow)).toList();
+
+    romaneioDeHoje.addAll(romaneioDeAmanha);
+
     return romaneioDeHoje;
   }
 
